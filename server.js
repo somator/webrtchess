@@ -6,7 +6,7 @@ const io = require('socket.io')(server)
 const port = 3000
 
 app.get('/', (req, res) => {
-    res.send('<h1>Hello world</h1>');
+    res.sendFile(__dirname, '/index.html');
 });
 
 io.on('connection', (socket) => {
