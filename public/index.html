@@ -10,6 +10,12 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         var socket = io();
+
+        socket.emit('join-room', 'room1', 10);
+
+        socket.on('user-connected', (userId) => {
+            console.log('User connected: ' + userId);
+        })
     </script>
 </body>
 </html>

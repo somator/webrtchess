@@ -13,9 +13,18 @@ app.get('/', (req, res) => {
 
 io.on('connection', (socket) => {
     console.log('client connected');
+
     socket.on('disconnect', () => {
         console.log('client disconnected');
     });
+
+    socket.on('join-room', (roomId, userId) => {
+        console.log(roomId, userId);
+        // subscribe the socket to the roomId channel
+        socket.join(roomId);
+        socket.emit('user-connected', userId);
+    })
+
 });
 
 server.listen(port, () => {
