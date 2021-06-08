@@ -11,17 +11,15 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         var socket = io();
-        var peer = new Peer();
-        
-        peer.on('open', function(id) {
-            console.log('My peer ID is: ' + id);
+        socket.on('connect', () => {
+            console.log(socket.id)
+            var peer = new Peer();
+            
+            peer.on('open', function(id) {
+                console.log('My peer ID is: ' + id);
+                console.log('My socket ID is: ' + socket.id);
+            });
         });
-
-        socket.emit('join-room', 'room1', 10);
-
-        socket.on('user-connected', (userId) => {
-            console.log('User connected: ' + userId);
-        })
     </script>
 </body>
 </html>
