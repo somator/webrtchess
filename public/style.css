@@ -1,0 +1,21 @@
+#chessboard {
+    display: grid;
+    grid-template-columns: repeat(8, 12vmin);
+    grid-template-rows: repeat(8, 12vmin);
+}
+
+#chessboard > .square {
+    aspect-ratio: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+}
+
+#chessboard > .square.light {
+    background: #b9a282;
+}
+
+#chessboard > .square.dark {
+    background: #423727;
+}
