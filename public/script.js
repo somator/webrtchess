@@ -17,11 +17,11 @@ socket.on('connect', () => {
             available: true,
         });
 
-        // When the client receives a peerId from the host
-        socket.on('peer found', peerId => {
-            console.log("Im connecting to other user: " + peerId);
-            // Open the peer-to-peer connection using the peerId
-            var conn = peer.connect(peerId);
+        // When the client receives a peer found message from the host
+        socket.on('peer found', (data) => {
+            console.log("Im connecting to other user: " + data.opponentPeerId);
+            // Open the peer-to-peer connection using the opponent's peer ID
+            var conn = peer.connect(data.opponentPeerId);
             conn.on('open', function() {
                 console.log('connection open');
             });

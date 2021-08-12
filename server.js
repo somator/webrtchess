@@ -24,8 +24,17 @@ SearchPool.prototype = {
             for (var key in this.pool) {
                 if (this.pool[key].available) {
                     this.pool[key].available = false;
-                    io.to(user.socketId).emit("peer found", this.pool[key].peerId);
-					io.to(this.pool[key].socketId).emit("peer found", user.peerId);
+                    // randomBoolean has a 50/50 chance of being true or false
+                    // this is used to determine which player is white and which is black
+                    var randomBoolean = Math.random() < 0.5;
+                    io.to(user.socketId).emit("peer found", {
+                        opponentPeerId: this.pool[key].peerId, 
+                        myPlayerColor: randomBoolean
+                    });
+					io.to(this.pool[key].socketId).emit("peer found", {
+                        opponentPeerId: user.peerId,
+                        myPlayerColor: !randomBoolean
+                    });
                     delete this.pool[key];
                     clearTimeout(this.timeouts[key]);
                     return;
