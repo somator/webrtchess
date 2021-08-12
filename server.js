@@ -39,7 +39,7 @@ SearchPool.prototype = {
 
     wait: function(user) {
         this.pool[user.peerId] = user;
-		this.timeouts[user.peerId] = setTimeout( ()=> {
+        this.timeouts[user.peerId] = setTimeout( ()=> {
 			delete this.pool[user.peerId];
 			this.search(user);
 		}, 30000)
@@ -63,6 +63,7 @@ io.on('connection', (socket) => {
 
     socket.on('offer connection', function(user){
 		console.log("Received offer", user.peerId);
+        user.socketId = socket.id;
 		globalPool.search(user);
 		console.log('Global Pool:\n', globalPool.pool);
 	});

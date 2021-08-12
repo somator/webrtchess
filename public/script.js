@@ -1,20 +1,26 @@
+// Open socket connection to host that serves the page
 var socket = io();
 socket.on('connect', () => {
     console.log(socket.id)
+    // The Peer object is where we create and receive peer-to-peer connections
     var peer = new Peer();
     
+    // Every Peer object is assigned a random, unique ID when it's created.
+    // When we want to connect to another peer, we'll need to know their peer id.
     peer.on('open', function(id) {
         console.log('My peer ID is: ' + id);
         console.log('My socket ID is: ' + socket.id);
 
+        // Send connection offer to the socket with peerId
         socket.emit('offer connection', {
             peerId: id,
-            socketId: socket.id,
             available: true,
         });
 
+        // When the client receives a peerId from the host
         socket.on('peer found', peerId => {
             console.log("Im connecting to other user: " + peerId);
+            // Open the peer-to-peer connection using the peerId
             var conn = peer.connect(peerId);
             conn.on('open', function() {
                 console.log('connection open');
