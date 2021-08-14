@@ -35,6 +35,7 @@ socket.on('connect', () => {
 
 ////////////////////////////////////////////////////////////////
 
+const startFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 const files = 'abcdefgh';
 const ranks = '12345678';
 
@@ -106,6 +107,3 @@ function annotateSquares(board, perspective){
         board.children[i].setAttribute('id', fileAndRank);
     }
 }
-
-// generateSquares(chessBoard, PlayerColor.White);
-// annotateSquares(chessBoard, PlayerColor.White);
