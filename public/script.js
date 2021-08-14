@@ -67,6 +67,10 @@ const PlayerColor = {
     Black: 'black',
 }
 
+const whitePieceLetters = ['P', 'N', 'B', 'R', 'Q', 'K'];
+const blackPieceLetters = ['p', 'n', 'b', 'r', 'q', 'k'];
+const allPieceLetters = whitePieceLetters.concat(blackPieceLetters);
+
 function reverseString(str) {
     return str.split('').reverse().join('');
 }
