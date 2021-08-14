@@ -28,6 +28,7 @@ socket.on('connect', () => {
                 console.log('connection open');
                 const myPlayerColor = data.myPlayerColor ? PlayerColor.Black : PlayerColor.White;
                 annotateSquares(chessBoard, myPlayerColor);
+                fillBoardFromFen(chessBoard, startFEN, myPlayerColor);
             });
         });
     });
@@ -105,5 +106,72 @@ function annotateSquares(board, perspective){
         let rankIndex = Math.trunc(i/8);
         let fileAndRank = filesLeftToRight[fileIndex] + ranksTopToBottom[rankIndex];
         board.children[i].setAttribute('id', fileAndRank);
+    }
+}
+
+// Append piece image as a child of a square element
+function addPieceToSquare(square, pieceName) {
+    let pieceImg = document.createElement('img');
+    pieceImg.className = 'piece ' + pieceName;
+    pieceImg.src = 'piecepics/' + pieceName + '.png';
+    square.appendChild(pieceImg);
+}
+
+// Fill the board squares with pieces according to the fen string and the player perspective
+function fillBoardFromFen(board, fen, perspective) {
+    let piecePlacement = fen.split(' ')[0];
+    if (perspective == PlayerColor.Black) {
+        piecePlacement = reverseString(piecePlacement);
+    }
+    let squares = board.children;
+    let squareIndex = 0;
+    for (char of piecePlacement) {
+        if (!isNaN(char)) {
+            squareIndex += parseInt(char);
+        } else if (char.match(/[a-z]/i)) {
+            let square = squares[squareIndex];
+            squareIndex += 1;
+            switch(char) {
+                case 'P':
+                    addPieceToSquare(square, 'white_pawn');
+                    break;
+                case 'N':
+                    addPieceToSquare(square, 'white_knight');
+                    break;
+                case 'B':
+                    addPieceToSquare(square, 'white_bishop');
+                    break;
+                case 'R':
+                    addPieceToSquare(square, 'white_rook');
+                    break;
+                case 'Q':
+                    addPieceToSquare(square, 'white_queen');
+                    break;
+                case 'K':
+                    addPieceToSquare(square, 'white_king');
+                    break;
+                case 'p':
+                    addPieceToSquare(square, 'black_pawn');
+                    break;
+                case 'n':
+                    addPieceToSquare(square, 'black_knight');
+                    break;
+                case 'b':
+                    addPieceToSquare(square, 'black_bishop');
+                    break;
+                case 'r':
+                    addPieceToSquare(square, 'black_rook');
+                    break;
+                case 'q':
+                    addPieceToSquare(square, 'black_queen');
+                    break;
+                case 'k':
+                    addPieceToSquare(square, 'black_king');
+                    break;
+                default:
+                    alert("An error occurred while parsing FEN.");
+                    break;
+            }
+        }
     }
 }

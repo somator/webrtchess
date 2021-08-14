@@ -19,3 +19,9 @@
 #chessboard > .square.dark {
     background: #423727;
 }
+
+.piece {
+    display: block;
+    width: 12vmin;
+    height: 12vmin;
+}
