@@ -1,3 +1,5 @@
+import Bitboard from "/u64.js";
+
 let chessBoard = document.getElementById('chessboard');
 
 // Open socket connection to host that serves the page
@@ -27,7 +29,7 @@ socket.on('connect', () => {
             conn.on('open', function() {
                 console.log('connection open');
                 const myPlayerColor = data.myPlayerColor ? PlayerColor.Black : PlayerColor.White;
-                game = new Game(chessBoard, myPlayerColor);
+                const game = new Game(chessBoard, myPlayerColor);
             });
         });
     });
