@@ -65,6 +65,7 @@ function appendSquare(board, squareColor, fileString, rankString) {
     board.appendChild(square);
 }
 
+// Generate square elements for board and assign them rank/file/color according to the player's perspective
 function generateSquares(board, perspective){
     let filesLeftToRight = files;
     let ranksTopToBottom = ranks;
@@ -86,4 +87,23 @@ function generateSquares(board, perspective){
     }
 }
 
-generateSquares(chessBoard, PlayerColor.White);
+// Assign rank and file to square elements according to perspective
+// To be used when the squares have already been added to the board
+function annotateSquares(board, perspective){
+    let filesLeftToRight = files;
+    let ranksTopToBottom = ranks;
+    if (perspective == PlayerColor.White) {
+        ranksTopToBottom = reverseString(ranksTopToBottom);
+    } else {
+        filesLeftToRight = reverseString(filesLeftToRight);
+    }
+    for (let i = 0; i < 64; i++) {
+        let fileIndex = i % 8;
+        let rankIndex = Math.trunc(i/8);
+        let fileAndRank = filesLeftToRight[fileIndex] + ranksTopToBottom[rankIndex];
+        board.children[i].setAttribute('id', fileAndRank);
+    }
+}
+
+// generateSquares(chessBoard, PlayerColor.White);
+annotateSquares(chessBoard, PlayerColor.White);
