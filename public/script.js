@@ -1,3 +1,5 @@
+let chessBoard = document.getElementById('chessboard');
+
 // Open socket connection to host that serves the page
 var socket = io();
 socket.on('connect', () => {
@@ -24,14 +26,14 @@ socket.on('connect', () => {
             var conn = peer.connect(data.opponentPeerId);
             conn.on('open', function() {
                 console.log('connection open');
+                const myPlayerColor = data.myPlayerColor ? PlayerColor.Black : PlayerColor.White;
+                annotateSquares(chessBoard, myPlayerColor);
             });
         });
     });
 });
 
 ////////////////////////////////////////////////////////////////
-
-let chessBoard = document.getElementById('chessboard');
 
 const files = 'abcdefgh';
 const ranks = '12345678';
@@ -106,4 +108,4 @@ function annotateSquares(board, perspective){
 }
 
 // generateSquares(chessBoard, PlayerColor.White);
-annotateSquares(chessBoard, PlayerColor.White);
+// annotateSquares(chessBoard, PlayerColor.White);
