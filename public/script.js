@@ -27,8 +27,7 @@ socket.on('connect', () => {
             conn.on('open', function() {
                 console.log('connection open');
                 const myPlayerColor = data.myPlayerColor ? PlayerColor.Black : PlayerColor.White;
-                annotateSquares(chessBoard, myPlayerColor);
-                fillBoardFromFen(chessBoard, startFEN, myPlayerColor);
+                game = new Game(chessBoard, myPlayerColor);
             });
         });
     });
@@ -36,7 +35,6 @@ socket.on('connect', () => {
 
 ////////////////////////////////////////////////////////////////
 
-const startFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 const files = 'abcdefgh';
 const ranks = '12345678';
 
@@ -62,7 +60,7 @@ function isLightSquare(file, rank) {
     }
 }
 
-function appendSquare(board, squareColor, fileString, rankString) {
+/* appendSquare(board, squareColor, fileString, rankString) {
     let square = document.createElement('div');
     square.className = 'square ' + squareColor;
     square.id = fileString + rankString;
@@ -70,7 +68,7 @@ function appendSquare(board, squareColor, fileString, rankString) {
 }
 
 // Generate square elements for board and assign them rank/file/color according to the player's perspective
-function generateSquares(board, perspective){
+generateSquares(board, perspective){
     let filesLeftToRight = files;
     let ranksTopToBottom = ranks;
     if (perspective == PlayerColor.White) {
@@ -89,88 +87,98 @@ function generateSquares(board, perspective){
             }
         }
     }
-}
+} */
 
-// Assign rank and file to square elements according to perspective
-// To be used when the squares have already been added to the board
-function annotateSquares(board, perspective){
-    let filesLeftToRight = files;
-    let ranksTopToBottom = ranks;
-    if (perspective == PlayerColor.White) {
-        ranksTopToBottom = reverseString(ranksTopToBottom);
-    } else {
-        filesLeftToRight = reverseString(filesLeftToRight);
+class Game {
+    constructor(board, perspective, fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
+        this.board = board;
+        this.perspective = perspective;
+        this.fen = fen;
+        this.annotateSquares();
+        this.fillBoardFromFen();
     }
-    for (let i = 0; i < 64; i++) {
-        let fileIndex = i % 8;
-        let rankIndex = Math.trunc(i/8);
-        let fileAndRank = filesLeftToRight[fileIndex] + ranksTopToBottom[rankIndex];
-        board.children[i].setAttribute('id', fileAndRank);
-    }
-}
 
-// Append piece image as a child of a square element
-function addPieceToSquare(square, pieceName) {
-    let pieceImg = document.createElement('img');
-    pieceImg.className = 'piece ' + pieceName;
-    pieceImg.src = 'piecepics/' + pieceName + '.png';
-    square.appendChild(pieceImg);
-}
-
-// Fill the board squares with pieces according to the fen string and the player perspective
-function fillBoardFromFen(board, fen, perspective) {
-    let piecePlacement = fen.split(' ')[0];
-    if (perspective == PlayerColor.Black) {
-        piecePlacement = reverseString(piecePlacement);
+    // Assign rank and file to square elements according to perspective
+    // To be used when the squares have already been added to the board
+    annotateSquares(){
+        let filesLeftToRight = files;
+        let ranksTopToBottom = ranks;
+        if (this.perspective == PlayerColor.White) {
+            ranksTopToBottom = reverseString(ranksTopToBottom);
+        } else {
+            filesLeftToRight = reverseString(filesLeftToRight);
+        }
+        for (let i = 0; i < 64; i++) {
+            let fileIndex = i % 8;
+            let rankIndex = Math.trunc(i/8);
+            let fileAndRank = filesLeftToRight[fileIndex] + ranksTopToBottom[rankIndex];
+            this.board.children[i].setAttribute('id', fileAndRank);
+        }
     }
-    let squares = board.children;
-    let squareIndex = 0;
-    for (char of piecePlacement) {
-        if (!isNaN(char)) {
-            squareIndex += parseInt(char);
-        } else if (char.match(/[a-z]/i)) {
-            let square = squares[squareIndex];
-            squareIndex += 1;
-            switch(char) {
-                case 'P':
-                    addPieceToSquare(square, 'white_pawn');
-                    break;
-                case 'N':
-                    addPieceToSquare(square, 'white_knight');
-                    break;
-                case 'B':
-                    addPieceToSquare(square, 'white_bishop');
-                    break;
-                case 'R':
-                    addPieceToSquare(square, 'white_rook');
-                    break;
-                case 'Q':
-                    addPieceToSquare(square, 'white_queen');
-                    break;
-                case 'K':
-                    addPieceToSquare(square, 'white_king');
-                    break;
-                case 'p':
-                    addPieceToSquare(square, 'black_pawn');
-                    break;
-                case 'n':
-                    addPieceToSquare(square, 'black_knight');
-                    break;
-                case 'b':
-                    addPieceToSquare(square, 'black_bishop');
-                    break;
-                case 'r':
-                    addPieceToSquare(square, 'black_rook');
-                    break;
-                case 'q':
-                    addPieceToSquare(square, 'black_queen');
-                    break;
-                case 'k':
-                    addPieceToSquare(square, 'black_king');
-                    break;
-                default:
-                    alert("An error occurred while parsing FEN.");
-                    break;
+
+    // Append piece image as a child of a square element
+    addPieceToSquare(square, pieceName) {
+        let pieceImg = document.createElement('img');
+        pieceImg.className = 'piece ' + pieceName;
+        pieceImg.src = 'piecepics/' + pieceName + '.png';
+        square.appendChild(pieceImg);
+    }
+
+    // Fill the board squares with pieces according to the fen string and the player perspective
+    fillBoardFromFen() {
+        let piecePlacement = this.fen.split(' ')[0];
+        if (this.perspective == PlayerColor.Black) {
+            piecePlacement = reverseString(piecePlacement);
+        }
+        let squares = this.board.children;
+        let squareIndex = 0;
+        for (const char of piecePlacement) {
+            if (!isNaN(char)) {
+                squareIndex += parseInt(char);
+            } else if (char.match(/[a-z]/i)) {
+                let square = squares[squareIndex];
+                squareIndex += 1;
+                switch(char) {
+                    case 'P':
+                        this.addPieceToSquare(square, 'white_pawn');
+                        break;
+                    case 'N':
+                        this.addPieceToSquare(square, 'white_knight');
+                        break;
+                    case 'B':
+                        this.addPieceToSquare(square, 'white_bishop');
+                        break;
+                    case 'R':
+                        this.addPieceToSquare(square, 'white_rook');
+                        break;
+                    case 'Q':
+                        this.addPieceToSquare(square, 'white_queen');
+                        break;
+                    case 'K':
+                        this.addPieceToSquare(square, 'white_king');
+                        break;
+                    case 'p':
+                        this.addPieceToSquare(square, 'black_pawn');
+                        break;
+                    case 'n':
+                        this.addPieceToSquare(square, 'black_knight');
+                        break;
+                    case 'b':
+                        this.addPieceToSquare(square, 'black_bishop');
+                        break;
+                    case 'r':
+                        this.addPieceToSquare(square, 'black_rook');
+                        break;
+                    case 'q':
+                        this.addPieceToSquare(square, 'black_queen');
+                        break;
+                    case 'k':
+                        this.addPieceToSquare(square, 'black_king');
+                        break;
+                    default:
+                        alert("An error occurred while parsing FEN.");
+                        break;
+                }
             }
         }
     }
