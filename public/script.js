@@ -40,6 +40,28 @@ socket.on('connect', () => {
 const files = 'abcdefgh';
 const ranks = '12345678';
 
+const bitFiles = {
+    'a' : new Bitboard(0x80808080, 0x80808080),
+    'b' : new Bitboard(0x40404040, 0x40404040),
+    'c' : new Bitboard(0x20202020, 0x20202020),
+    'd' : new Bitboard(0x10101010, 0x10101010),
+    'e' : new Bitboard(0x08080808, 0x08080808),
+    'f' : new Bitboard(0x04040404, 0x04040404),
+    'g' : new Bitboard(0x02020202, 0x02020202),
+    'h' : new Bitboard(0x01010101, 0x01010101),
+}
+
+const bitRanks = {
+    '1' : new Bitboard(0x00000000, 0x000000ff),
+    '2' : new Bitboard(0x00000000, 0x0000ff00),
+    '3' : new Bitboard(0x00000000, 0x00ff0000),
+    '4' : new Bitboard(0x00000000, 0xff000000),
+    '5' : new Bitboard(0x000000ff, 0x00000000),
+    '6' : new Bitboard(0x0000ff00, 0x00000000),
+    '7' : new Bitboard(0x00ff0000, 0x00000000),
+    '8' : new Bitboard(0xff000000, 0x00000000),
+}
+
 const PlayerColor = {
     White: 'white',
     Black: 'black',
@@ -61,35 +83,6 @@ function isLightSquare(file, rank) {
         return false;
     }
 }
-
-/* appendSquare(board, squareColor, fileString, rankString) {
-    let square = document.createElement('div');
-    square.className = 'square ' + squareColor;
-    square.id = fileString + rankString;
-    board.appendChild(square);
-}
-
-// Generate square elements for board and assign them rank/file/color according to the player's perspective
-generateSquares(board, perspective){
-    let filesLeftToRight = files;
-    let ranksTopToBottom = ranks;
-    if (perspective == PlayerColor.White) {
-        ranksTopToBottom = reverseString(ranksTopToBottom);
-    } else {
-        filesLeftToRight = reverseString(filesLeftToRight);
-    }
-    for (let row = 0; row < 8; row++) {
-        let rank = ranksTopToBottom[row];
-        for (let col = 0; col < 8; col++) {
-            let file = filesLeftToRight[col];
-            if (isLightSquare(file, rank)) {
-                appendSquare(board, 'light', file, rank);
-            } else {
-                appendSquare(board, 'dark', file, rank);
-            }
-        }
-    }
-} */
 
 class Game {
     constructor(board, perspective, fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
@@ -185,3 +178,32 @@ class Game {
         }
     }
 }
+
+/* appendSquare(board, squareColor, fileString, rankString) {
+    let square = document.createElement('div');
+    square.className = 'square ' + squareColor;
+    square.id = fileString + rankString;
+    board.appendChild(square);
+}
+
+// Generate square elements for board and assign them rank/file/color according to the player's perspective
+generateSquares(board, perspective){
+    let filesLeftToRight = files;
+    let ranksTopToBottom = ranks;
+    if (perspective == PlayerColor.White) {
+        ranksTopToBottom = reverseString(ranksTopToBottom);
+    } else {
+        filesLeftToRight = reverseString(filesLeftToRight);
+    }
+    for (let row = 0; row < 8; row++) {
+        let rank = ranksTopToBottom[row];
+        for (let col = 0; col < 8; col++) {
+            let file = filesLeftToRight[col];
+            if (isLightSquare(file, rank)) {
+                appendSquare(board, 'light', file, rank);
+            } else {
+                appendSquare(board, 'dark', file, rank);
+            }
+        }
+    }
+} */
