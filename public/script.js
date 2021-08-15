@@ -1,4 +1,4 @@
-import Bitboard from "/u64.js";
+import { u32, Bitboard } from "/u64.js";
 
 let chessBoard = document.getElementById('chessboard');
 
@@ -75,9 +75,21 @@ function reverseString(str) {
     return str.split('').reverse().join('');
 }
 
-// a -> 1, b -> 2, c -> 2...
+// a -> 1, b -> 2, c -> 3...
 function letterToNumber(c) {
     return c.charCodeAt(0) - 96;
+}
+
+function anToBitboard(an) {
+    const file = an[0]
+    const rank = an[1];
+    if (rank < '5') {
+        const lower = 1 << ((8 * (rank.charCodeAt(0) - 49)) + (104 - file.charCodeAt(0)));
+        return new Bitboard(u32(0), u32(lower));
+    } else {
+        const upper = 1 << ((8 * (rank.charCodeAt(0) - 53)) + (104 - file.charCodeAt(0)));
+        return new Bitboard(u32(upper), u32(0));
+    }
 }
 
 function isLightSquare(file, rank) {
@@ -97,6 +109,7 @@ class Game {
         this.annotateSquares();
         this.fillBoardFromFen();
         this.initDefaultBitboards();
+        this.listenForMoves();
     }
 
     // Assign rank and file to square elements according to perspective
@@ -197,6 +210,20 @@ class Game {
         this.bitboards['r'] = new Bitboard(0x81000000, 0x00000000);
         this.bitboards['q'] = new Bitboard(0x10000000, 0x00000000);
         this.bitboards['k'] = new Bitboard(0x08000000, 0x00000000);
+    }
+
+    listenForMoves() {
+        const pieces = this.board.querySelectorAll('.piece')
+        pieces.forEach(piece => {
+            piece.addEventListener('click', () => {
+                const square = piece.parentElement;
+                if (square.className != 'square highlighted') {
+                    square.className = 'square highlighted';
+                } else {
+                    isLightSquare(square.id[0], square.id[1]) ? square.className = 'square light' : square.className = 'square dark';
+                }
+            })
+        })
     }
 }
 

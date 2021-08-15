@@ -1,9 +1,9 @@
 // return unsigned 32-bit Integer
-function u32(n) {
+export function u32(n) {
     return n >>> 0;
 }
 
-export default class Bitboard {
+export class Bitboard {
     constructor(upper, lower) {
         this.upper = u32(upper);
         this.lower = u32(lower);

@@ -20,6 +20,10 @@
     background: #423727;
 }
 
+#chessboard > .square.highlighted {
+    background: yellow;
+}
+
 .piece {
     display: block;
     width: 12vmin;
