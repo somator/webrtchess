@@ -100,6 +100,23 @@ function isLightSquare(file, rank) {
     }
 }
 
+function getPieceElem(square) {
+    return square.querySelector('.piece');
+}
+
+function getPiece(square) {
+    const pieceElem = getPieceElem(square);
+    if (pieceElem) {
+        const piece = {
+            color: pieceElem.classList[1],
+            type: pieceElem.classList[2],
+        }
+        return piece;
+    } else {
+        return null;
+    }
+}
+
 class Game {
     constructor(board, perspective, fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
         this.board = board;
@@ -219,11 +236,17 @@ class Game {
                 const square = piece.parentElement;
                 if (square.className != 'square highlighted') {
                     square.className = 'square highlighted';
+                    this.findMoves(square);
                 } else {
                     isLightSquare(square.id[0], square.id[1]) ? square.className = 'square light' : square.className = 'square dark';
                 }
             })
         })
+    }
+
+    findMoves(square) {
+        // to do
+        return;
     }
 }
 
