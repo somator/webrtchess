@@ -146,8 +146,44 @@ class Board {
         return moves;
     }
 
-    rookPattern() {
-        return;
+    rookPattern(pos, color) {
+        let moves = new Bitboard(0, 0);
+        let attacking = emptyBb;
+        if (color == 'white') {
+            const notMyBb = this.whiteBitBoard.NOT();
+            const oppBb = this.blackBitboard;
+        } else {
+            const notMyBb = this.blackBitBoard.NOT();
+            const oppBb = this.whiteBitboard;
+        }
+        let N = pos;
+        while (!N.isEmpty() && attacking.isEmpty()) {
+            N = N.LSH(8).AND(ranks['1'].NOT()).AND(notMyBb);
+            attacking = N.AND(oppBb);
+            moves = moves.OR(N);
+        }
+        attacking = emptyBb;
+        let E = pos;
+        while (!E.isEmpty() && attacking.isEmpty()) {
+            E = E.RSH(1).AND(files['a'].NOT()).AND(notMyBb);
+            attacking = E.AND(oppBb);
+            moves = moves.OR(E);
+        }
+        attacking = emptyBb;
+        let S = pos;
+        while (!S.isEmpty() && attacking.isEmpty()) {
+            S = S.RSH(8).and(ranks['8'].NOT()).AND(notMyBb);
+            attacking = S.AND(oppBb);
+            moves = moves.OR(S)
+        }
+        attacking = emptyBb;
+        let W = pos;
+        while (!W.isEmpty() && attacking.isEmpty()) {
+            W = W.LSH(1).AND(files['h'].NOT()).AND(notMyBb);
+            attacking = W.AND(oppBb);
+            moves = moves.OR(W);
+        }
+        return moves;
     }
 
     queenPattern() {
