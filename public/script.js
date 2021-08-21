@@ -103,6 +103,14 @@ function anToBitboard(an) {
     }
 }
 
+function notFiles(arr) {
+    bitboard = new Bitboard(0,0);
+    for (file in arr) {
+        bitboard = bitboard.AND(files[file]);
+    }
+    return bitboard.NOT();
+}
+
 function isLightSquare(file, rank) {
     if ((parseInt(rank) + letterToNumber(file)) % 2 == 1) {
         return true;
@@ -273,6 +281,7 @@ class Game {
 
     findMoves(square) {
         // to do
+        const pos64 = anToBitboard(square.id);
         const piece = getPiece(startSquare);
         const myBb = this.getMyBitboard();
         const oppBb = this.getOppBitboard();
