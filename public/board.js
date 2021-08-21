@@ -40,7 +40,7 @@ class Board {
     findMoves(pos, piece) {
         switch (piece.type) {
             case 'pawn':
-                moves = pawnPattern()
+                moves = pawnPattern(pos, piece.color);
                 break;
             case 'knight':
                 moves = knightPattern();
@@ -61,8 +61,24 @@ class Board {
         return moves;
     }
 
-    pawnPattern() {
-        return;
+    pawnPattern(pos, color) {
+        const moves = new Bitboard(0, 0);
+        const notAllBb = this.allBitboard.NOT();
+        if (color == 'white') {
+            const oppBb = this.blackBitboard;
+            moves = moves.OR(pos.LSH(8).AND(notAllBb));
+            moves = moves.OR(pos.LSH(16).AND(ranks['4']).AND(notAllBb));
+            moves = moves.OR(pos.LSH(9).AND(files['h'].NOT()).AND(oppBb));
+            moves = moves.OR(pos.LSH(7).AND(files['a'].NOT()).AND(oppBb))
+        }
+        else if (color == 'black') {
+            const oppBb = this.whiteBitBoard;
+            moves = moves.OR(pos.RSH(8).AND(notAllBb));
+            moves = moves.OR(pos.RSH(16).AND(ranks['5']).AND(notAllBb));
+            moves = moves.OR(pos.RSH(9).AND(files['a'].NOT()).AND(oppBb));
+            moves = moves.OR(pos.RSH(7).AND(files['h'].NOT()).AND(oppBb))
+        }
+        return moves;
     }
 
     knightPattern() {
