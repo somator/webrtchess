@@ -109,20 +109,20 @@ class Board {
         return;
     }
 
-    get whiteBitBoard() {
-        whiteBitboard = new Bitboard(0, 0);
-        for (pieceLetter of pieceLetters.white) {
-            whiteBitboard = whiteBitboard.OR(bitboards[pieceLetter]);
+    bitboardOfColor(color) {
+        bitboard = new Bitboard(0, 0);
+        for (pieceLetter of pieceLetters[color]) {
+            bitboard = bitboard.OR(this.bitboards[pieceLetter]);
         }
-        return whiteBitboard;
+        return bitboard;
+    }
+
+    get whiteBitBoard() {
+        return this.bitboardOfColor('white');
     }
 
     get blackBitboard() {
-        blackBitboard = new Bitboard(0, 0);
-        for (pieceLetter of pieceLetters.black) {
-            blackBitboard = blackBitboard.OR(bitboards[pieceLetter]);
-        }
-        return blackBitboard;
+        return this.bitboardOfColor('black');
     }
 
     get allBitboard() {
