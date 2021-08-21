@@ -1,4 +1,4 @@
-let chessBoard = document.getElementById('chessboard');
+const boardElement = document.getElementById('chessboard');
 
 // Open socket connection to host that serves the page
 var socket = io();
@@ -27,7 +27,7 @@ socket.on('connect', () => {
             conn.on('open', function() {
                 console.log('connection open');
                 const myPlayerColor = data.myPlayerColor ? PlayerColor.Black : PlayerColor.White;
-                const game = new Game(chessBoard, myPlayerColor);
+                const game = new Game(boardElement, myPlayerColor);
             });
         });
     });
@@ -90,14 +90,12 @@ function getPiece(square) {
 }
 
 class Game {
-    constructor(board, perspective, fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
-        this.board = board;
+    constructor(boardElement, perspective, fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
+        this.boardElement = boardElement;
         this.perspective = perspective;
         this.fen = fen;
-        this.bitboards = {};
         this.annotateSquares();
         this.fillBoardFromFen();
-        this.initDefaultBitboards();
         this.listenForMoves();
     }
 
@@ -115,7 +113,7 @@ class Game {
             let fileIndex = i % 8;
             let rankIndex = Math.trunc(i/8);
             let fileAndRank = filesLeftToRight[fileIndex] + ranksTopToBottom[rankIndex];
-            this.board.children[i].setAttribute('id', fileAndRank);
+            this.boardElement.children[i].setAttribute('id', fileAndRank);
         }
     }
 
@@ -133,7 +131,7 @@ class Game {
         if (this.perspective == PlayerColor.Black) {
             piecePlacement = reverseString(piecePlacement);
         }
-        let squares = this.board.children;
+        let squares = this.boardElement.children;
         let squareIndex = 0;
         for (const char of piecePlacement) {
             if (!isNaN(char)) {
@@ -187,7 +185,7 @@ class Game {
     }
 
     listenForMoves() {
-        const pieces = this.board.querySelectorAll('.piece')
+        const pieces = this.boardElement.querySelectorAll('.piece')
         pieces.forEach(piece => {
             piece.addEventListener('click', () => {
                 const square = piece.parentElement;
