@@ -51,11 +51,11 @@ function anToBitboard(an) {
 
 class Board {
     constructor() {
-        this.bitboards = {};
-        this.initDefaultBitboards();
+        this.bitboards = initDefaultBitboards();
     }
 
     initDefaultBitboards() {
+        bitboards = {};
         bitboards['P'] = new Bitboard(0x00000000, 0x0000ff00);
         bitboards['N'] = new Bitboard(0x00000000, 0x00000042);
         bitboards['B'] = new Bitboard(0x00000000, 0x00000024);
@@ -68,6 +68,7 @@ class Board {
         bitboards['r'] = new Bitboard(0x81000000, 0x00000000);
         bitboards['q'] = new Bitboard(0x10000000, 0x00000000);
         bitboards['k'] = new Bitboard(0x08000000, 0x00000000);
+        return bitboards;
     }
 
     move() {
