@@ -78,4 +78,8 @@ class Board {
         }
         return blackBitboard;
     }
+
+    get allBitboard() {
+        return this.whiteBitBoard.OR(this.blackBitboard);
+    }
 }
