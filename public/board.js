@@ -186,8 +186,10 @@ class Board {
         return moves;
     }
 
-    queenPattern() {
-        return;
+    queenPattern(pos, color) {
+        moves = bishopPattern(pos, color);
+        moves = moves.OR(rookPattern(pos, color));
+        return moves;
     }
 
     kingPattern() {
