@@ -263,8 +263,34 @@ class Game {
         return myBitboard;
     }
 
+    getOppBitboard() {
+        oppBitboard = new Bitboard(0, 0);
+        for (pieceLetter of pieceLetters[oppColor(this.perspective)]) {
+            oppBitboard = oppBitboard.OR(this.bitboards[pieceLetter]);
+        }
+        return oppBitboard;
+    }
+
     findMoves(square) {
         // to do
+        const piece = getPiece(startSquare);
+        const myBb = this.getMyBitboard();
+        const oppBb = this.getOppBitboard();
+        const notMyBb = myBb.NOT();
+        switch (piece.type) {
+            case 'pawn':
+                break;
+            case 'knight':
+                break;
+            case 'bishop':
+                break;
+            case 'rook':
+                break;
+            case 'queen':
+                break;
+            case 'king':
+                break;
+        }
         return;
     }
 }
