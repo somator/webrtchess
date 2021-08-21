@@ -52,18 +52,6 @@ function letterToNumber(c) {
     return c.charCodeAt(0) - 96;
 }
 
-function anToBitboard(an) {
-    const file = an[0]
-    const rank = an[1];
-    if (rank < '5') {
-        const lower = 1 << ((8 * (rank.charCodeAt(0) - 49)) + (104 - file.charCodeAt(0)));
-        return new Bitboard(u32(0), u32(lower));
-    } else {
-        const upper = 1 << ((8 * (rank.charCodeAt(0) - 53)) + (104 - file.charCodeAt(0)));
-        return new Bitboard(u32(upper), u32(0));
-    }
-}
-
 function isLightSquare(file, rank) {
     if ((parseInt(rank) + letterToNumber(file)) % 2 == 1) {
         return true;
