@@ -247,6 +247,14 @@ class Game {
         })
     }
 
+    getMyBitboard() {
+        myBitboard = new Bitboard(0, 0);
+        for (pieceLetter of pieceLetters[this.perspective]) {
+            myBitboard = myBitboard.OR(this.bitboards[pieceLetter]);
+        }
+        return myBitboard;
+    }
+
     findMoves(square) {
         // to do
         return;
