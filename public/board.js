@@ -187,8 +187,8 @@ class Board {
     }
 
     queenPattern(pos, color) {
-        moves = bishopPattern(pos, color);
-        moves = moves.OR(rookPattern(pos, color));
+        moves = this.bishopPattern(pos, color);
+        moves = moves.OR(this.rookPattern(pos, color));
         return moves;
     }
 
