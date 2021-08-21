@@ -70,7 +70,7 @@ class Board {
     }
 
     pawnPattern(pos, color) {
-        const moves = new Bitboard(0, 0);
+        let moves = new Bitboard(0, 0);
         const notAllBb = this.allBitboard.NOT();
         if (color == 'white') {
             const oppBb = this.blackBitboard;
@@ -89,8 +89,19 @@ class Board {
         return moves;
     }
 
-    knightPattern() {
-        return;
+    knightPattern(pos, color) {
+        let moves = new Bitboard(0, 0);
+        const notMyBb = this.bitboardOfColor(color).NOT();
+        moves = moves.OR(pos.LSH(17).AND(notFiles(['a'])));
+        moves = moves.OR(pos.LSH(10).AND(notFiles(['a', 'b'])));
+        moves = moves.OR(pos.RSH( 6).AND(notFiles(['a', 'b'])));
+        moves = moves.OR(pos.RSH(15).AND(notFiles(['a'])));
+        moves = moves.OR(pos.LSH(15).AND(notFiles(['h'])));
+        moves = moves.OR(pos.LSH( 6).AND(notFiles(['g', 'h'])));
+        moves = moves.OR(pos.RSH(10).AND(notFiles(['g', 'h'])));
+        moves = moves.OR(pos.RSH(17).AND(notFiles(['h'])));
+        moves = moves.AND(notMyBb);
+        return moves;
     }
 
     bishopPattern() {
