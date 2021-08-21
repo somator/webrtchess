@@ -192,8 +192,22 @@ class Board {
         return moves;
     }
 
-    kingPattern() {
-        return;
+    kingPattern(pos, color) {
+        let moves = new Bitboard(0, 0);
+        if (color == 'white') {
+            const notMyBb = this.whiteBitBoard.NOT()
+        } else {
+            const notMyBb = this.blackBitBoard.NOT();
+        }
+        moves = moves.OR(pos.LSH(9).AND(files['h'].NOT().AND(ranks['1'].NOT())).AND(notMyBb));
+        moves = moves.OR(pos.LSH(8).AND(ranks['1'].NOT()).AND(notMyBb));
+        moves = moves.OR(pos.LSH(7).AND(files['a'].NOT().AND(ranks['1'].NOT())).AND(notMyBb));
+        moves = moves.OR(pos.LSH(1).AND(files['h'].NOT()).AND(notMyBb));
+        moves = moves.OR(pos.RSH(1).AND(files['a'].NOT()).AND(notMyBb));
+        moves = moves.OR(pos.RSH(7).AND(files['h'].NOT().AND(ranks['8'].NOT())).AND(notMyBb));
+        moves = moves.OR(pos.RSH(8).AND(ranks['8'].NOT()).AND(notMyBb));
+        moves = moves.OR(pos.RSH(9).AND(files['a'].NOT().AND(ranks['8'].NOT())).AND(notMyBb));
+        return moves;
     }
 
     bitboardOfColor(color) {
