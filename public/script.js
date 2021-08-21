@@ -1,5 +1,3 @@
-import { u32, Bitboard } from "/u64.js";
-
 let chessBoard = document.getElementById('chessboard');
 
 // Open socket connection to host that serves the page
@@ -40,38 +38,9 @@ socket.on('connect', () => {
 const files = 'abcdefgh';
 const ranks = '12345678';
 
-const bitFiles = {
-    'a' : new Bitboard(0x80808080, 0x80808080),
-    'b' : new Bitboard(0x40404040, 0x40404040),
-    'c' : new Bitboard(0x20202020, 0x20202020),
-    'd' : new Bitboard(0x10101010, 0x10101010),
-    'e' : new Bitboard(0x08080808, 0x08080808),
-    'f' : new Bitboard(0x04040404, 0x04040404),
-    'g' : new Bitboard(0x02020202, 0x02020202),
-    'h' : new Bitboard(0x01010101, 0x01010101),
-}
-
-const bitRanks = {
-    '1' : new Bitboard(0x00000000, 0x000000ff),
-    '2' : new Bitboard(0x00000000, 0x0000ff00),
-    '3' : new Bitboard(0x00000000, 0x00ff0000),
-    '4' : new Bitboard(0x00000000, 0xff000000),
-    '5' : new Bitboard(0x000000ff, 0x00000000),
-    '6' : new Bitboard(0x0000ff00, 0x00000000),
-    '7' : new Bitboard(0x00ff0000, 0x00000000),
-    '8' : new Bitboard(0xff000000, 0x00000000),
-}
-
 const PlayerColor = {
     White: 'white',
     Black: 'black',
-}
-
-const whitePieceLetters = ['P', 'N', 'B', 'R', 'Q', 'K'];
-const blackPieceLetters = ['p', 'n', 'b', 'r', 'q', 'k'];
-const pieceLetters = {
-    'white' : whitePieceLetters,
-    'black' : blackPieceLetters,
 }
 
 function reverseString(str) {
@@ -81,14 +50,6 @@ function reverseString(str) {
 // a -> 1, b -> 2, c -> 3...
 function letterToNumber(c) {
     return c.charCodeAt(0) - 96;
-}
-
-function oppColor(color) {
-    if (color == PlayerColor.White) {
-        return PlayerColor.Black;
-    } else {
-        return PlayerColor.White;
-    }
 }
 
 function anToBitboard(an) {
@@ -101,14 +62,6 @@ function anToBitboard(an) {
         const upper = 1 << ((8 * (rank.charCodeAt(0) - 53)) + (104 - file.charCodeAt(0)));
         return new Bitboard(u32(upper), u32(0));
     }
-}
-
-function notFiles(arr) {
-    bitboard = new Bitboard(0,0);
-    for (file in arr) {
-        bitboard = bitboard.AND(files[file]);
-    }
-    return bitboard.NOT();
 }
 
 function isLightSquare(file, rank) {
@@ -233,21 +186,6 @@ class Game {
         }
     }
 
-    initDefaultBitboards() {
-        this.bitboards['P'] = new Bitboard(0x00000000, 0x0000ff00);
-        this.bitboards['N'] = new Bitboard(0x00000000, 0x00000042);
-        this.bitboards['B'] = new Bitboard(0x00000000, 0x00000024);
-        this.bitboards['R'] = new Bitboard(0x00000000, 0x00000081);
-        this.bitboards['Q'] = new Bitboard(0x00000000, 0x00000010);
-        this.bitboards['K'] = new Bitboard(0x00000000, 0x00000008);
-        this.bitboards['p'] = new Bitboard(0x00ff0000, 0x00000000);
-        this.bitboards['n'] = new Bitboard(0x42000000, 0x00000000);
-        this.bitboards['b'] = new Bitboard(0x24000000, 0x00000000);
-        this.bitboards['r'] = new Bitboard(0x81000000, 0x00000000);
-        this.bitboards['q'] = new Bitboard(0x10000000, 0x00000000);
-        this.bitboards['k'] = new Bitboard(0x08000000, 0x00000000);
-    }
-
     listenForMoves() {
         const pieces = this.board.querySelectorAll('.piece')
         pieces.forEach(piece => {
@@ -263,43 +201,8 @@ class Game {
         })
     }
 
-    getMyBitboard() {
-        myBitboard = new Bitboard(0, 0);
-        for (pieceLetter of pieceLetters[this.perspective]) {
-            myBitboard = myBitboard.OR(this.bitboards[pieceLetter]);
-        }
-        return myBitboard;
-    }
-
-    getOppBitboard() {
-        oppBitboard = new Bitboard(0, 0);
-        for (pieceLetter of pieceLetters[oppColor(this.perspective)]) {
-            oppBitboard = oppBitboard.OR(this.bitboards[pieceLetter]);
-        }
-        return oppBitboard;
-    }
-
     findMoves(square) {
         // to do
-        const pos64 = anToBitboard(square.id);
-        const piece = getPiece(startSquare);
-        const myBb = this.getMyBitboard();
-        const oppBb = this.getOppBitboard();
-        const notMyBb = myBb.NOT();
-        switch (piece.type) {
-            case 'pawn':
-                break;
-            case 'knight':
-                break;
-            case 'bishop':
-                break;
-            case 'rook':
-                break;
-            case 'queen':
-                break;
-            case 'king':
-                break;
-        }
         return;
     }
 }
