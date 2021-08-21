@@ -2,7 +2,29 @@ import { u32, Bitboard } from "/u64.js";
 
 const pieceLetters = {
     white: ['P', 'N', 'B', 'R', 'Q', 'K'],
-    black: ['p', 'n', 'b', 'r', 'q', 'k']
+    black: ['p', 'n', 'b', 'r', 'q', 'k'],
+};
+
+const files = {
+    'a' : new Bitboard(0x80808080, 0x80808080),
+    'b' : new Bitboard(0x40404040, 0x40404040),
+    'c' : new Bitboard(0x20202020, 0x20202020),
+    'd' : new Bitboard(0x10101010, 0x10101010),
+    'e' : new Bitboard(0x08080808, 0x08080808),
+    'f' : new Bitboard(0x04040404, 0x04040404),
+    'g' : new Bitboard(0x02020202, 0x02020202),
+    'h' : new Bitboard(0x01010101, 0x01010101),
+};
+
+const ranks = {
+    '1' : new Bitboard(0x00000000, 0x000000ff),
+    '2' : new Bitboard(0x00000000, 0x0000ff00),
+    '3' : new Bitboard(0x00000000, 0x00ff0000),
+    '4' : new Bitboard(0x00000000, 0xff000000),
+    '5' : new Bitboard(0x000000ff, 0x00000000),
+    '6' : new Bitboard(0x0000ff00, 0x00000000),
+    '7' : new Bitboard(0x00ff0000, 0x00000000),
+    '8' : new Bitboard(0xff000000, 0x00000000),
 };
 
 class Board {
