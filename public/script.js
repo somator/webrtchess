@@ -83,6 +83,14 @@ function letterToNumber(c) {
     return c.charCodeAt(0) - 96;
 }
 
+function oppColor(color) {
+    if (color == PlayerColor.White) {
+        return PlayerColor.Black;
+    } else {
+        return PlayerColor.White;
+    }
+}
+
 function anToBitboard(an) {
     const file = an[0]
     const rank = an[1];
