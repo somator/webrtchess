@@ -27,6 +27,14 @@ const ranks = {
     '8' : new Bitboard(0xff000000, 0x00000000),
 };
 
+function notFiles(arr) {
+    bitboard = new Bitboard(0,0);
+    for (file in arr) {
+        bitboard = bitboard.AND(files[file]);
+    }
+    return bitboard.NOT();
+}
+
 class Board {
     constructor() {
         this.bitboards = {};
