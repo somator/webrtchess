@@ -43,6 +43,21 @@ class Board {
         this.initDefaultBitboards();
     }
 
+    initDefaultBitboards() {
+        bitboards['P'] = new Bitboard(0x00000000, 0x0000ff00);
+        bitboards['N'] = new Bitboard(0x00000000, 0x00000042);
+        bitboards['B'] = new Bitboard(0x00000000, 0x00000024);
+        bitboards['R'] = new Bitboard(0x00000000, 0x00000081);
+        bitboards['Q'] = new Bitboard(0x00000000, 0x00000010);
+        bitboards['K'] = new Bitboard(0x00000000, 0x00000008);
+        bitboards['p'] = new Bitboard(0x00ff0000, 0x00000000);
+        bitboards['n'] = new Bitboard(0x42000000, 0x00000000);
+        bitboards['b'] = new Bitboard(0x24000000, 0x00000000);
+        bitboards['r'] = new Bitboard(0x81000000, 0x00000000);
+        bitboards['q'] = new Bitboard(0x10000000, 0x00000000);
+        bitboards['k'] = new Bitboard(0x08000000, 0x00000000);
+    }
+
     move() {
         return;
     }
