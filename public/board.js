@@ -1,5 +1,7 @@
 import { u32, Bitboard } from "/u64.js";
 
+const emptyBb = new Bitboard(0,0);
+
 const pieceLetters = {
     white: ['P', 'N', 'B', 'R', 'Q', 'K'],
     black: ['p', 'n', 'b', 'r', 'q', 'k'],
@@ -104,8 +106,44 @@ class Board {
         return moves;
     }
 
-    bishopPattern() {
-        return;
+    bishopPattern(pos, color) {
+        let moves = new Bitboard(0, 0);
+        if (color == 'white') {
+            const notMyBb = this.whiteBitBoard.NOT();
+            const oppBb = this.blackBitboard;
+        } else {
+            const notMyBb = this.blackBitBoard.NOT();
+            const oppBb = this.whiteBitboard;
+        }
+        let attacking = emptyBb;
+        let NW = pos;
+        while (!NW.isEmpty() && attacking.isEmpty()) {
+            NW = NW.LSH(9).AND(files['h'].NOT().AND(ranks['1'].NOT())).AND(notMyBb);
+            attacking = NW.AND(oppBb);
+            moves = moves.OR(NW);
+        }
+        attacking = emptyBb;
+        let NE = pos;
+        while (!NE.isEmpty() && attacking.isEmpty()) {
+            NE = NE.LSH(7).AND(files['a'].NOT().AND(ranks['1'].NOT())).AND(notMyBb);
+            attacking = NE.AND(oppBb);
+            moves = moves.OR(NE);
+        }
+        attacking = emptyBb;
+        let SE = pos;
+        while (!SE.isEmpty() && attacking.isEmpty()) {
+            SE = SE.RSH(9).AND(files['a'].NOT().AND(ranks['8'].NOT())).AND(notMyBb);
+            attacking = SE.AND(oppBb);
+            moves = moves.OR(SE);
+        }
+        attacking = emptyBb;
+        let SW = pos;
+        while (!SW.isEmpty() && attacking.isEmpty()) {
+            SW = SW.RSH(7).AND(files['h'].NOT().AND(ranks['8'].NOT())).AND(notMyBb);
+            attacking = SW.AND(oppBb);
+            moves = moves.OR(SW);
+        }
+        return moves;
     }
 
     rookPattern() {
