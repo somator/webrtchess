@@ -117,7 +117,7 @@ class Board {
                 moves = kingPattern();
                 break;
         }
-        return moves;
+        return bitboardToAn(moves);
     }
 
     pawnPattern(pos, color) {
