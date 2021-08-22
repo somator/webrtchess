@@ -69,9 +69,9 @@ function bitboardToAn(bitboard) {
     return arr;
 }
 
-class Board {
+export class Board {
     constructor() {
-        this.bitboards = initDefaultBitboards();
+        this.bitboards = this.initDefaultBitboards();
     }
 
     initDefaultBitboards() {
