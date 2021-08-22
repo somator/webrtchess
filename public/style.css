@@ -29,3 +29,12 @@
     width: 12vmin;
     height: 12vmin;
 }
+
+.move-circle{
+    background-color: blue;
+    display: block;
+    height: 3vmin;
+    width: 3vmin;
+    border-radius: 50%;
+    border: 2px solid #000;
+}

@@ -59,7 +59,7 @@ function bitboardToAn(bitboard) {
     const arr = [];
     let shift = new Bitboard(0, 1);
     for (let i=0; i<64; i++) {
-        if (bitboard.equals(shift)) {
+        if (bitboard.equals(bitboard.OR(shift))) {
             const file = String.fromCharCode(104 - (i % 8));
             const rank = String.fromCharCode(49 + (i/8>>0));
             arr.push(file + rank);

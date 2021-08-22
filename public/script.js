@@ -185,6 +185,7 @@ class Game {
                     square.className = 'square highlighted';
                     //this.findMoves(square);
                     moves = this.board.findMoves(square.id, getPiece(square));
+                    this.visualizeMoves(moves);
                 } else {
                     isLightSquare(square.id[0], square.id[1]) ? square.className = 'square light' : square.className = 'square dark';
                 }
@@ -192,9 +193,12 @@ class Game {
         })
     }
 
-    findMoves(square) {
-        // to do
-        return;
+    visualizeMoves(moves) {
+        for (let an of moves) {
+            const potentialMoveSignifier = document.createElement('div');
+            potentialMoveSignifier.className = 'move-circle';
+            document.getElementById(an).appendChild(potentialMoveSignifier);
+        }
     }
 }
 
