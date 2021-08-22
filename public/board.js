@@ -29,6 +29,11 @@ const ranks = {
     '8' : new Bitboard(0xff000000, 0x00000000),
 };
 
+// 1 -> a, 2 -> b, 3 -> c...
+function numberToLetter(n) {
+    return String.fromCharCode(96 + n);
+}
+
 function notFiles(arr) {
     bitboard = new Bitboard(0,0);
     for (file in arr) {
@@ -47,6 +52,21 @@ function anToBitboard(an) {
         const upper = 1 << ((8 * (rank.charCodeAt(0) - 53)) + (104 - file.charCodeAt(0)));
         return new Bitboard(u32(upper), u32(0));
     }
+}
+
+// 0 -> h1, 1 -> g1, ... , 8 -> h2
+function bitboardToAn(bitboard) {
+    const arr = [];
+    let shift = new Bitboard(0, 1);
+    for (i=0; i<64; i++) {
+        if (bitboard.equals(shift)) {
+            const file = String.fromCharCode(104 - (i % 8));
+            const rank = String.fromCharCode(49 + (i/8>>0));
+            arr.push(file + rank);
+        }
+        shift = shift.SHL(1);
+    }
+    return arr;
 }
 
 class Board {
@@ -75,7 +95,8 @@ class Board {
         return;
     }
 
-    findMoves(pos, piece) {
+    findMoves(an, piece) {
+        const pos = anToBitboard(an);
         switch (piece.type) {
             case 'pawn':
                 moves = pawnPattern(pos, piece.color);

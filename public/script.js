@@ -1,3 +1,5 @@
+import { Board } from "/board.js";
+
 const boardElement = document.getElementById('chessboard');
 
 // Open socket connection to host that serves the page
@@ -80,6 +82,7 @@ function getPiece(square) {
 class Game {
     constructor(boardElement, perspective, fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
         this.boardElement = boardElement;
+        this.board = new Board();
         this.perspective = perspective;
         this.fen = fen;
         this.annotateSquares();
@@ -179,7 +182,8 @@ class Game {
                 const square = piece.parentElement;
                 if (square.className != 'square highlighted') {
                     square.className = 'square highlighted';
-                    this.findMoves(square);
+                    //this.findMoves(square);
+                    moves = this.board.findMoves(square.id, getPiece(square));
                 } else {
                     isLightSquare(square.id[0], square.id[1]) ? square.className = 'square light' : square.className = 'square dark';
                 }
