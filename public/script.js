@@ -109,10 +109,10 @@ class Game {
     }
 
     // Append piece image as a child of a square element
-    addPieceToSquare(square, pieceName) {
+    addPieceToSquare(square, pieceColor, pieceType) {
         let pieceImg = document.createElement('img');
-        pieceImg.className = 'piece ' + pieceName;
-        pieceImg.src = 'piecepics/' + pieceName + '.png';
+        pieceImg.className = 'piece ' + pieceColor + ' ' + pieceType;
+        pieceImg.src = 'piecepics/' + pieceColor + '_' + pieceType + '.png';
         square.appendChild(pieceImg);
     }
 
@@ -132,40 +132,40 @@ class Game {
                 squareIndex += 1;
                 switch(char) {
                     case 'P':
-                        this.addPieceToSquare(square, 'white_pawn');
+                        this.addPieceToSquare(square, 'white', 'pawn');
                         break;
                     case 'N':
-                        this.addPieceToSquare(square, 'white_knight');
+                        this.addPieceToSquare(square, 'white', 'knight');
                         break;
                     case 'B':
-                        this.addPieceToSquare(square, 'white_bishop');
+                        this.addPieceToSquare(square, 'white', 'bishop');
                         break;
                     case 'R':
-                        this.addPieceToSquare(square, 'white_rook');
+                        this.addPieceToSquare(square, 'white', 'rook');
                         break;
                     case 'Q':
-                        this.addPieceToSquare(square, 'white_queen');
+                        this.addPieceToSquare(square, 'white', 'queen');
                         break;
                     case 'K':
-                        this.addPieceToSquare(square, 'white_king');
+                        this.addPieceToSquare(square, 'white', 'king');
                         break;
                     case 'p':
-                        this.addPieceToSquare(square, 'black_pawn');
+                        this.addPieceToSquare(square, 'black', 'pawn');
                         break;
                     case 'n':
-                        this.addPieceToSquare(square, 'black_knight');
+                        this.addPieceToSquare(square, 'black', 'knight');
                         break;
                     case 'b':
-                        this.addPieceToSquare(square, 'black_bishop');
+                        this.addPieceToSquare(square, 'black', 'bishop');
                         break;
                     case 'r':
-                        this.addPieceToSquare(square, 'black_rook');
+                        this.addPieceToSquare(square, 'black', 'rook');
                         break;
                     case 'q':
-                        this.addPieceToSquare(square, 'black_queen');
+                        this.addPieceToSquare(square, 'black', 'queen');
                         break;
                     case 'k':
-                        this.addPieceToSquare(square, 'black_king');
+                        this.addPieceToSquare(square, 'black', 'king');
                         break;
                     default:
                         alert("An error occurred while parsing FEN.");
@@ -176,7 +176,8 @@ class Game {
     }
 
     listenForMoves() {
-        const pieces = this.boardElement.querySelectorAll('.piece')
+        const pieces = this.boardElement.querySelectorAll('.piece');
+        let moves;
         pieces.forEach(piece => {
             piece.addEventListener('click', () => {
                 const square = piece.parentElement;

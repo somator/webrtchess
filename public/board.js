@@ -58,13 +58,13 @@ function anToBitboard(an) {
 function bitboardToAn(bitboard) {
     const arr = [];
     let shift = new Bitboard(0, 1);
-    for (i=0; i<64; i++) {
+    for (let i=0; i<64; i++) {
         if (bitboard.equals(shift)) {
             const file = String.fromCharCode(104 - (i % 8));
             const rank = String.fromCharCode(49 + (i/8>>0));
             arr.push(file + rank);
         }
-        shift = shift.SHL(1);
+        shift = shift.LSH(1);
     }
     return arr;
 }
@@ -96,24 +96,25 @@ export class Board {
 
     findMoves(an, piece) {
         const pos = anToBitboard(an);
+        let moves;
         switch (piece.type) {
             case 'pawn':
-                moves = pawnPattern(pos, piece.color);
+                moves = this.pawnPattern(pos, piece.color);
                 break;
             case 'knight':
-                moves = knightPattern();
+                moves = this.knightPattern(pos, piece.color);
                 break;
             case 'bishop':
-                moves = bishopPattern();
+                moves = this.bishopPattern(pos, piece.color);
                 break;
             case 'rook':
-                moves = rookPattern();
+                moves = this.rookPattern(pos, piece.color);
                 break;
             case 'queen':
-                moves = queenPattern();
+                moves = this.queenPattern(pos, piece.color);
                 break;
             case 'king':
-                moves = kingPattern();
+                moves = this.kingPattern(pos, piece.color);
                 break;
         }
         return bitboardToAn(moves);
@@ -259,8 +260,8 @@ export class Board {
     }
 
     bitboardOfColor(color) {
-        bitboard = new Bitboard(0, 0);
-        for (pieceLetter of pieceLetters[color]) {
+        let bitboard = new Bitboard(0, 0);
+        for (let pieceLetter of pieceLetters[color]) {
             bitboard = bitboard.OR(this.bitboards[pieceLetter]);
         }
         return bitboard;

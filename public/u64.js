@@ -29,7 +29,7 @@ export class Bitboard {
         return (this.lower == other.lower && this.upper == other.upper)
     }
 
-    SHL(n) {
+    LSH(n) {
         n = u32(n);
         if (n > 31) {
             return new Bitboard(u32(this.upper << (n - 32)), u32(0));
@@ -38,7 +38,7 @@ export class Bitboard {
         }
     }
 
-    SHR(n) {
+    RSH(n) {
         n = u32(n);
         if (n > 31) {
             return new Bitboard(u32(0), (this.upper >>> (n - 32)));
