@@ -46,4 +46,27 @@ export class Bitboard {
             return new Bitboard((this.upper >>> n), u32((this.lower >>> n) | (this.upper << (32 - n))));
         }
     }
+
+    isEmpty() {
+        return (this.lower == 0 && this.upper == 0)
+    }
+
+    getBit(i) {
+        i = u32(i);
+        return (i < 32 ? ((this.upper & (1 << (31 - i))) >>> (31 - i)) : ((this.lower & (1 << (63 - i))) >>> (63 - i)));
+    }
+
+    print() {
+        let index = 0;
+        let representation = '';
+        for (let i = 0; i < 8; i++) {
+            let row = '';
+            for (let j = 0; j < 8; j++) {
+                row = row + this.getBit(index).toString();
+                index += 1;
+            }
+            representation = representation + row + '\n';
+        }
+        return representation;
+    }
 }

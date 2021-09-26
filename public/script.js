@@ -1,4 +1,4 @@
-import { Board } from "/board.js";
+import { Board, anToBitboard } from "/board.js";
 
 const boardElement = document.getElementById('chessboard');
 
@@ -45,6 +45,15 @@ const PlayerColor = {
     Black: 'black',
 }
 
+const pieceToLetter = {
+    pawn: 'p',
+    knight: 'n',
+    bishop: 'b',
+    rook: 'r',
+    queen: 'q',
+    king: 'k',
+}
+
 function reverseString(str) {
     return str.split('').reverse().join('');
 }
@@ -77,6 +86,14 @@ function getPiece(square) {
     } else {
         return null;
     }
+}
+
+function getPieceLetter(pieceElem) {
+    let letter = pieceToLetter[pieceElem.classList[2]];
+    if (pieceElem.classList[1] == 'white') {
+        letter = letter.toUpperCase();
+    }
+    return letter;
 }
 
 class Game {
@@ -178,15 +195,12 @@ class Game {
     }
 
     listenForMoves() {
+        const game = this;
         const pieces = this.boardElement.querySelectorAll('.piece');
-        //let moves;
         pieces.forEach(piece => {
             piece.addEventListener('click', () => {
                 const square = piece.parentElement;
                 if (square.className != 'square highlighted') {
-                    //square.className = 'square highlighted';
-                    //moves = this.board.findMoves(square.id, getPiece(square));
-                    //this.visualizeMoves(moves);
                     this.selectSquare(square);
                 } else {
                     this.deselectSquare(square);
@@ -217,21 +231,30 @@ class Game {
     }
 
     deselectSquare(square) {
-        console.log('deselecting ', square);
         isLightSquare(square.id[0], square.id[1]) ? square.className = 'square light' : square.className = 'square dark';
         for (let potentialMove of this.potentialMoves) {
             potentialMove.removeEventListener('click', potentialMove.ml);
             potentialMove.removeChild(potentialMove.querySelector('.move-circle'));
         }
         this.potentialMoves = [];
+        this.selectedSquare = null;
     }
 
     movePiece(startSquare, endSquare) {
         const pieceToCapture = getPieceElem(endSquare);
+        const startBb = anToBitboard(startSquare.id);
+        const endBb = anToBitboard(endSquare.id);
+
         if (pieceToCapture) {
+            const letterToCapture = getPieceLetter(pieceToCapture);
+            this.board.bitboards[letterToCapture] = this.board.bitboards[letterToCapture].AND(endBb.NOT());
             endSquare.removeChild(pieceToCapture);
+
         }
-        const myPieceImg = startSquare.removeChild(getPieceElem(startSquare));
+        const myPiece = getPieceElem(startSquare);
+        const myPieceLetter = getPieceLetter(myPiece);
+        this.board.bitboards[myPieceLetter] = this.board.bitboards[myPieceLetter].OR(endBb).AND(startBb.NOT());
+        const myPieceImg = startSquare.removeChild(myPiece);
         endSquare.appendChild(myPieceImg);
     }
 }

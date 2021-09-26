@@ -42,7 +42,7 @@ function notFiles(arr) {
     return bitboard.NOT();
 }
 
-function anToBitboard(an) {
+export function anToBitboard(an) {
     const file = an[0]
     const rank = an[1];
     if (rank < '5') {
@@ -131,7 +131,7 @@ export class Board {
             moves = moves.OR(pos.LSH(7).AND(files['a'].NOT()).AND(oppBb))
         }
         else if (color == 'black') {
-            const oppBb = this.whiteBitBoard;
+            const oppBb = this.whiteBitboard;
             moves = moves.OR(pos.RSH(8).AND(notAllBb));
             moves = moves.OR(pos.RSH(16).AND(ranks['5']).AND(notAllBb));
             moves = moves.OR(pos.RSH(9).AND(files['a'].NOT()).AND(oppBb));
@@ -157,12 +157,13 @@ export class Board {
 
     bishopPattern(pos, color) {
         let moves = new Bitboard(0, 0);
+        let notMyBb, oppBb;
         if (color == 'white') {
-            const notMyBb = this.whiteBitBoard.NOT();
-            const oppBb = this.blackBitboard;
+            notMyBb = this.whiteBitboard.NOT()
+            oppBb = this.blackBitboard;
         } else {
-            const notMyBb = this.blackBitBoard.NOT();
-            const oppBb = this.whiteBitboard;
+            notMyBb = this.blackBitboard.NOT()
+            oppBb = this.whiteBitboard;
         }
         let attacking = emptyBb;
         let NW = pos;
@@ -198,12 +199,15 @@ export class Board {
     rookPattern(pos, color) {
         let moves = new Bitboard(0, 0);
         let attacking = emptyBb;
+        let notMyBb, oppBb
         if (color == 'white') {
-            const notMyBb = this.whiteBitBoard.NOT();
-            const oppBb = this.blackBitboard;
+            let whiteBitboard = this.whiteBitboard;
+            notMyBb = this.whiteBitboard.NOT();
+            oppBb = this.blackBitboard;
         } else {
-            const notMyBb = this.blackBitBoard.NOT();
-            const oppBb = this.whiteBitboard;
+            let blackBitboard = this.blackBitboard;
+            notMyBb = this.blackBitboard.NOT();
+            oppBb = this.whiteBitboard;
         }
         let N = pos;
         while (!N.isEmpty() && attacking.isEmpty()) {
@@ -221,7 +225,7 @@ export class Board {
         attacking = emptyBb;
         let S = pos;
         while (!S.isEmpty() && attacking.isEmpty()) {
-            S = S.RSH(8).and(ranks['8'].NOT()).AND(notMyBb);
+            S = S.RSH(8).AND(ranks['8'].NOT()).AND(notMyBb);
             attacking = S.AND(oppBb);
             moves = moves.OR(S)
         }
@@ -236,7 +240,7 @@ export class Board {
     }
 
     queenPattern(pos, color) {
-        moves = this.bishopPattern(pos, color);
+        let moves = this.bishopPattern(pos, color);
         moves = moves.OR(this.rookPattern(pos, color));
         return moves;
     }
@@ -244,9 +248,9 @@ export class Board {
     kingPattern(pos, color) {
         let moves = new Bitboard(0, 0);
         if (color == 'white') {
-            const notMyBb = this.whiteBitBoard.NOT()
+            const notMyBb = this.whiteBitboard.NOT()
         } else {
-            const notMyBb = this.blackBitBoard.NOT();
+            const notMyBb = this.blackBitboard.NOT();
         }
         moves = moves.OR(pos.LSH(9).AND(files['h'].NOT().AND(ranks['1'].NOT())).AND(notMyBb));
         moves = moves.OR(pos.LSH(8).AND(ranks['1'].NOT()).AND(notMyBb));
@@ -267,7 +271,7 @@ export class Board {
         return bitboard;
     }
 
-    get whiteBitBoard() {
+    get whiteBitboard() {
         return this.bitboardOfColor('white');
     }
 
@@ -276,6 +280,6 @@ export class Board {
     }
 
     get allBitboard() {
-        return this.whiteBitBoard.OR(this.blackBitboard);
+        return this.whiteBitboard.OR(this.blackBitboard);
     }
 }
