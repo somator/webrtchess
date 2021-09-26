@@ -261,6 +261,30 @@ class Game {
         const myPieceImg = startSquare.removeChild(myPiece);
         endSquare.appendChild(myPieceImg);
     }
+
+    get piecePlacement() {
+        return this.fen.split(' ')[0];
+    }
+
+    get activeColor() {
+        return this.fen.split(' ')[1];
+    }
+
+    get castlingAvailability() {
+        return this.fen.split(' ')[2];
+    }
+
+    get enPassantTarget() {
+        return this.fen.split(' ')[3];
+    }
+
+    get halfmoveClock() {
+        return this.fen.split(' ')[4];
+    }
+
+    get fullmoveNumber() {
+        return this.fen.split(' ')[5];
+    }
 }
 
 /* appendSquare(board, squareColor, fileString, rankString) {
