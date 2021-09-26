@@ -218,9 +218,13 @@ class Game {
         square.className = 'square highlighted';
         const moves = this.board.findMoves(square.id, getPiece(square));
         for (let an of moves) {
-            const potentialMoveSignifier = document.createElement('div');
-            potentialMoveSignifier.className = 'move-circle';
             const moveSquare = document.getElementById(an);
+            const potentialMoveSignifier = document.createElement('div');
+            if (moveSquare.querySelector('.piece')) {
+                potentialMoveSignifier.className = 'move capture-circle'
+            } else {
+                potentialMoveSignifier.className = 'move move-circle';
+            }
             moveSquare.appendChild(potentialMoveSignifier);
             moveSquare.addEventListener('click', moveSquare.ml = function moveListener() {
                 game.movePiece(square, moveSquare);
@@ -234,7 +238,7 @@ class Game {
         isLightSquare(square.id[0], square.id[1]) ? square.className = 'square light' : square.className = 'square dark';
         for (let potentialMove of this.potentialMoves) {
             potentialMove.removeEventListener('click', potentialMove.ml);
-            potentialMove.removeChild(potentialMove.querySelector('.move-circle'));
+            potentialMove.removeChild(potentialMove.querySelector('.move'));
         }
         this.potentialMoves = [];
         this.selectedSquare = null;
