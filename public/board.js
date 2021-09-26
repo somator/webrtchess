@@ -29,11 +29,6 @@ const ranks = {
     '8' : new Bitboard(0xff000000, 0x00000000),
 };
 
-// 1 -> a, 2 -> b, 3 -> c...
-function numberToLetter(n) {
-    return String.fromCharCode(96 + n);
-}
-
 function notFiles(arr) {
     bitboard = new Bitboard(0,0);
     for (file in arr) {

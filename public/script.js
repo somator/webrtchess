@@ -63,6 +63,11 @@ function letterToNumber(c) {
     return c.charCodeAt(0) - 96;
 }
 
+// 1 -> a, 2 -> b, 3 -> c...
+function numberToLetter(n) {
+    return String.fromCharCode(96 + n);
+}
+
 function isLightSquare(file, rank) {
     if ((parseInt(rank) + letterToNumber(file)) % 2 == 1) {
         return true;
@@ -75,14 +80,18 @@ function getPieceElem(square) {
     return square.querySelector('.piece');
 }
 
+function getPieceFromElem(pieceElem) {
+    const piece = {
+        color: pieceElem.classList[1],
+        type: pieceElem.classList[2],
+    }
+    return piece;
+}
+
 function getPiece(square) {
     const pieceElem = getPieceElem(square);
     if (pieceElem) {
-        const piece = {
-            color: pieceElem.classList[1],
-            type: pieceElem.classList[2],
-        }
-        return piece;
+        return getPieceFromElem(pieceElem);
     } else {
         return null;
     }
@@ -90,10 +99,28 @@ function getPiece(square) {
 
 function getPieceLetter(pieceElem) {
     let letter = pieceToLetter[pieceElem.classList[2]];
-    if (pieceElem.classList[1] == 'white') {
+    if (pieceElem.classList[1] == PlayerColor.White) {
         letter = letter.toUpperCase();
     }
     return letter;
+}
+
+function getSquare(id) {
+    return document.getElementById(id);
+}
+
+function squareRelativeToPos(position, deltaX, deltaY, perspective) {
+    if (perspective == PlayerColor.Black) {
+        deltaX = -deltaX;
+        deltaY = -deltaY;
+    }
+    const file = numberToLetter(letterToNumber(position[0]) + deltaX);
+    const rank = (parseInt(position[1]) + deltaY).toString();
+    if (files.includes(file) && ranks.includes(rank)) {
+        return getSquare(file + rank);
+    } else {
+        return false;
+    }
 }
 
 class Game {
@@ -245,20 +272,35 @@ class Game {
     }
 
     movePiece(startSquare, endSquare) {
-        const pieceToCapture = getPieceElem(endSquare);
+        const myPieceElem = getPieceElem(startSquare);
+        const myPiece = getPieceFromElem(myPieceElem);
+        const endSquarePiece = getPieceElem(endSquare);
         const startBb = anToBitboard(startSquare.id);
         const endBb = anToBitboard(endSquare.id);
-
-        if (pieceToCapture) {
-            const letterToCapture = getPieceLetter(pieceToCapture);
-            this.board.bitboards[letterToCapture] = this.board.bitboards[letterToCapture].AND(endBb.NOT());
-            endSquare.removeChild(pieceToCapture);
-
+        const startRank = parseInt(startSquare.id[1]);
+        const endRank = parseInt(endSquare.id[1]);
+        // Piece to capture?
+        if (endSquarePiece) {
+            const endPieceLetter = getPieceLetter(endSquarePiece);
+            this.board.bitboards[endPieceLetter] = this.board.bitboards[endPieceLetter].AND(endBb.NOT());
+            endSquare.removeChild(endSquarePiece);
         }
-        const myPiece = getPieceElem(startSquare);
-        const myPieceLetter = getPieceLetter(myPiece);
+        // En Passant capture?
+        if (myPiece.type == 'pawn' && endSquare.id == this.enPassantTarget) {
+            capturedPawnSquare = squareRelativeToPos(this.enPassantTarget, 0, -1, this.perspective);
+            capturedPawnElem = getPieceElem(capturedPawnElem);
+            capturedPawnSquare.removeChild(capturedPawnElem);
+        }
+        // Update En Passant?
+        if (myPiece.type == 'pawn' && Math.abs(startRank - endRank) == 2) {
+            this.enPassantTarget = endSquare.id[0] + ((startRank + endRank) / 2).toString();
+        } else {
+            this.enPassantTarget = '-';
+        }
+
+        const myPieceLetter = getPieceLetter(myPieceElem);
         this.board.bitboards[myPieceLetter] = this.board.bitboards[myPieceLetter].OR(endBb).AND(startBb.NOT());
-        const myPieceImg = startSquare.removeChild(myPiece);
+        const myPieceImg = startSquare.removeChild(myPieceElem);
         endSquare.appendChild(myPieceImg);
     }
 
@@ -276,6 +318,12 @@ class Game {
 
     get enPassantTarget() {
         return this.fen.split(' ')[3];
+    }
+
+    set enPassantTarget(an) {
+        const updatedFen = this.fen.split(' ');
+        updatedFen[3] = an;
+        this.fen = updatedFen.join(' ');
     }
 
     get halfmoveClock() {
