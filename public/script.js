@@ -85,6 +85,8 @@ class Game {
         this.board = new Board();
         this.perspective = perspective;
         this.fen = fen;
+        this.selectedSquare;
+        this.potentialMoves = [];
         this.annotateSquares();
         this.fillBoardFromFen();
         this.listenForMoves();
@@ -177,28 +179,60 @@ class Game {
 
     listenForMoves() {
         const pieces = this.boardElement.querySelectorAll('.piece');
-        let moves;
+        //let moves;
         pieces.forEach(piece => {
             piece.addEventListener('click', () => {
                 const square = piece.parentElement;
                 if (square.className != 'square highlighted') {
-                    square.className = 'square highlighted';
-                    //this.findMoves(square);
-                    moves = this.board.findMoves(square.id, getPiece(square));
-                    this.visualizeMoves(moves);
+                    //square.className = 'square highlighted';
+                    //moves = this.board.findMoves(square.id, getPiece(square));
+                    //this.visualizeMoves(moves);
+                    this.selectSquare(square);
                 } else {
-                    isLightSquare(square.id[0], square.id[1]) ? square.className = 'square light' : square.className = 'square dark';
+                    this.deselectSquare(square);
                 }
             })
         })
     }
 
-    visualizeMoves(moves) {
+    selectSquare(square) {
+        var game = this;
+        if (this.selectedSquare) {
+            this.deselectSquare(this.selectedSquare);
+        }
+        this.selectedSquare = square;
+        square.className = 'square highlighted';
+        const moves = this.board.findMoves(square.id, getPiece(square));
         for (let an of moves) {
             const potentialMoveSignifier = document.createElement('div');
             potentialMoveSignifier.className = 'move-circle';
-            document.getElementById(an).appendChild(potentialMoveSignifier);
+            const moveSquare = document.getElementById(an);
+            moveSquare.appendChild(potentialMoveSignifier);
+            moveSquare.addEventListener('click', moveSquare.ml = function moveListener() {
+                game.movePiece(square, moveSquare);
+                game.deselectSquare(square);
+            });
+            this.potentialMoves.push(moveSquare);
         }
+    }
+
+    deselectSquare(square) {
+        console.log('deselecting ', square);
+        isLightSquare(square.id[0], square.id[1]) ? square.className = 'square light' : square.className = 'square dark';
+        for (let potentialMove of this.potentialMoves) {
+            potentialMove.removeEventListener('click', potentialMove.ml);
+            potentialMove.removeChild(potentialMove.querySelector('.move-circle'));
+        }
+        this.potentialMoves = [];
+    }
+
+    movePiece(startSquare, endSquare) {
+        const pieceToCapture = getPieceElem(endSquare);
+        if (pieceToCapture) {
+            endSquare.removeChild(pieceToCapture);
+        }
+        const myPieceImg = startSquare.removeChild(getPieceElem(startSquare));
+        endSquare.appendChild(myPieceImg);
     }
 }
 
