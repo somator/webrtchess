@@ -287,7 +287,7 @@ class Game {
         }
         // En Passant capture?
         if (myPiece.type == 'pawn' && endSquare.id == this.enPassantTarget) {
-            capturedPawnSquare = squareRelativeToPos(this.enPassantTarget, 0, -1, this.perspective);
+            capturedPawnSquare = squareRelativeToPos(this.enPassantTarget, 0, -1, myPiece.color);
             capturedPawnElem = getPieceElem(capturedPawnElem);
             capturedPawnSquare.removeChild(capturedPawnElem);
         }
@@ -296,6 +296,30 @@ class Game {
             this.enPassantTarget = endSquare.id[0] + ((startRank + endRank) / 2).toString();
         } else {
             this.enPassantTarget = '-';
+        }
+        // Castling
+        if (myPiece.type == 'king') {
+            if (endSquare == squareRelativeToPos(startSquare.id, 2, 0, myPiece.color)) {
+                // Castling to the right
+                if (myPiece.color == PlayerColor.White) {
+                    const rookSquare = getSquare('h1');
+                    const rookElem = rookSquare.removeChild(getPieceElem(rookSquare));
+                } else {
+                    const rookSquare = getSquare('a8');
+                    const rookElem = rookSquare.removeChild(getPieceElem(rookSquare));
+                }
+                squareRelativeToPos(startSquare.id, 1, 0, myPiece.color).appendChild(rookElem);
+            } else if (endSquare == squareRelativeToPos(startSquare.id, -2, 0, myPiece.color)) {
+                // Castling to the left
+                if (myPiece.color == PlayerColor.White) {
+                    const rookSquare = getSquare('a1');
+                    const rookElem = rookSquare.removeChild(getPieceElem(rookSquare));
+                } else {
+                    const rookSquare = getSquare('h8');
+                    const rookElem = rookSquare.removeChild(getPieceElem(rookSquare));
+                }
+                squareRelativeToPos(startSquare.id, -1, 0, myPiece.color).appendChild(rookElem);
+            }
         }
 
         const myPieceLetter = getPieceLetter(myPieceElem);
@@ -316,6 +340,12 @@ class Game {
         return this.fen.split(' ')[2];
     }
 
+    set castlingAvailability(ca) {
+        const updatedFen = this.fen.split(' ');
+        updatedFen[2] = ca;
+        this.fen = updatedFen.join(' ');
+    }
+
     get enPassantTarget() {
         return this.fen.split(' ')[3];
     }
@@ -332,6 +362,43 @@ class Game {
 
     get fullmoveNumber() {
         return this.fen.split(' ')[5];
+    }
+
+    updateCastling(startSquare) {
+        let ca = this.castlingAvailability;
+        switch(startSquare) {
+            // white king
+            case 'e1':
+                ca = ca.replace('K', '');
+                ca = ca.replace('Q', '');
+                break;
+            // black king
+            case 'e8':
+                ca = ca.replace('k', '');
+                ca = ca.replace('q', '');
+                break;
+            // white rook kingside
+            case 'h1':
+                ca = ca.replace('K', '');
+                break;
+            // black rook kingside
+            case 'h8':
+                ca = ca.replace('k', '');
+                break;
+            // white rook queenside
+            case 'a1':
+                ca = ca.replace('Q', '');
+                break;
+            // black rook queenside
+            case 'a8':
+                ca = ca.replace('q', '');
+                break;
+        }
+        if (ca == ''){
+            this.castlingAvailability = '-';
+        } else {
+            this.castlingAvailability = ca;
+        }
     }
 }
 
