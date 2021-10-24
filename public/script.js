@@ -285,15 +285,19 @@ class Game {
             this.board.bitboards[endPieceLetter] = this.board.bitboards[endPieceLetter].AND(endBb.NOT());
             endSquare.removeChild(endSquarePiece);
         }
-        // En Passant capture?
-        if (myPiece.type == 'pawn' && endSquare.id == this.enPassantTarget) {
-            capturedPawnSquare = squareRelativeToPos(this.enPassantTarget, 0, -1, myPiece.color);
-            capturedPawnElem = getPieceElem(capturedPawnElem);
-            capturedPawnSquare.removeChild(capturedPawnElem);
-        }
-        // Update En Passant?
-        if (myPiece.type == 'pawn' && Math.abs(startRank - endRank) == 2) {
-            this.enPassantTarget = endSquare.id[0] + ((startRank + endRank) / 2).toString();
+        if (myPiece.type == 'pawn') {
+            // En Passant capture?
+            if (endSquare.id == this.enPassantTarget) {
+                capturedPawnSquare = squareRelativeToPos(this.enPassantTarget, 0, -1, myPiece.color);
+                capturedPawnElem = getPieceElem(capturedPawnElem);
+                capturedPawnSquare.removeChild(capturedPawnElem);
+            }
+            // Update En Passant?
+            if (Math.abs(startRank - endRank) == 2) {
+                this.enPassantTarget = endSquare.id[0] + ((startRank + endRank) / 2).toString();
+            } else {
+                this.enPassantTarget = '-';
+            }
         } else {
             this.enPassantTarget = '-';
         }
@@ -327,6 +331,8 @@ class Game {
         const myPieceImg = startSquare.removeChild(myPieceElem);
         endSquare.appendChild(myPieceImg);
     }
+
+    
 
     get piecePlacement() {
         return this.fen.split(' ')[0];
