@@ -68,6 +68,12 @@ export class Board {
     constructor() {
         this.bitboards = {};
         this.initDefaultBitboards();
+        this.canCastle = {
+            K: true,
+            Q: true,
+            k: true,
+            q: true,
+        }
     }
 
     initDefaultBitboards() {
@@ -250,10 +256,11 @@ export class Board {
 
     kingPattern(pos, color) {
         let moves = new Bitboard(0, 0);
+        let notMyBb;
         if (color == 'white') {
-            const notMyBb = this.whiteBitboard.NOT()
+            notMyBb = this.whiteBitboard.NOT()
         } else {
-            const notMyBb = this.blackBitboard.NOT();
+            notMyBb = this.blackBitboard.NOT();
         }
         moves = moves.OR(pos.LSH(9).AND(files['h'].NOT().AND(ranks['1'].NOT())).AND(notMyBb));
         moves = moves.OR(pos.LSH(8).AND(ranks['1'].NOT()).AND(notMyBb));
@@ -263,6 +270,29 @@ export class Board {
         moves = moves.OR(pos.RSH(7).AND(files['h'].NOT().AND(ranks['8'].NOT())).AND(notMyBb));
         moves = moves.OR(pos.RSH(8).AND(ranks['8'].NOT()).AND(notMyBb));
         moves = moves.OR(pos.RSH(9).AND(files['a'].NOT().AND(ranks['8'].NOT())).AND(notMyBb));
+        /*
+        if (color == 'white' && pos.AND(new Bitboard(0, 8)).equals(pos)) {
+            console.log('condition 1');
+            const emptyF1 = notMyBb.AND(new Bitboard(0, 4)).isEmpty();
+            if (emptyF1 && this.canCastle['K']) {
+                moves = moves.OR(new Bitboard(0, 2));
+            }
+            const emptyD1 = notMyBb.AND(new Bitboard(0, 16)).isEmpty();
+            if (emptyD1 && this.canCastle['Q']) {
+                moves = moves.OR(new Bitboard(0, 32));
+            }
+        } else if (color == 'black' && pos.AND(new Bitboard(134217728, 0)).equals(pos)) {
+            console.log('condition 2')
+            const emptyF8 = notMyBb.AND(new Bitboard(67108864, 0)).isEmpty()
+            if (emptyF8 && this.canCastle['k']) {
+                moves = moves.OR(new Bitboard(33554432, 0));
+            }
+            const emptyD8 = notMyBb.AND(new Bitboard(268435456, 0)).isEmpty()
+            if (emptyD8 && this.canCastle['q']) {
+                moves = moves.OR(new Bitboard(536870912, 0));
+            }
+        }
+        */
         return moves;
     }
 
