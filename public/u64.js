@@ -4,9 +4,18 @@ export function u32(n) {
 }
 
 export class Bitboard {
-    constructor(upper, lower) {
+    /*constructor(upper, lower) {
         this.upper = u32(upper);
         this.lower = u32(lower);
+    }*/
+    constructor() {
+        if (arguments.length == 1) {
+            this.upper = u32(parseInt(arguments[0].slice(0, 32)), 2);
+            this.lower = u32(parseInt(arguments[0].slice(32, 64)), 2);
+        } else {
+            this.upper = u32(arguments[0]);
+            this.lower = u32(arguments[1]);
+        }
     }
 
     NOT() {
@@ -26,6 +35,10 @@ export class Bitboard {
     }
 
     equals(other) {
+        console.log(this.upper);
+        console.log(other.upper);
+        console.log(this.lower);
+        console.log(other.upper);
         return (this.lower == other.lower && this.upper == other.upper)
     }
 
