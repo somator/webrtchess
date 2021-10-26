@@ -10,6 +10,17 @@
 <body>
     <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
+    <script src="./a.out.js"></script>
+    <script>
+        Module.onRuntimeInitialized = async _ => {
+            const api = {
+                version: Module.cwrap('version', 'number', []),
+                hello_world: Module.cwrap('hello_world', 'string', [])
+            };
+            console.log(api.version());
+            console.log(api.hello_world())
+        };
+    </script>
     <script type="module" src="script.js" defer></script>
     <div id="chessboard">
         <!-- top row -->
