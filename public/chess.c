@@ -20,6 +20,8 @@ enum Type {
     KING = 5,
 };
 
+U64 bitboards[12];
+
 char *movesPtr;
 
 char *find_moves(char start_pos[]) {
