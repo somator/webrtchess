@@ -6,18 +6,19 @@
 
 typedef unsigned long long U64;
 
-enum Color {
-    WHITE = 0,
-    BLACK = 1,
-};
-
-enum Type {
-    PAWN = 0,
-    KNIGHT = 1,
-    BISHOP = 2,
-    ROOK = 3,
-    QUEEN = 4,
-    KING = 5,
+enum Piece_Type {
+    WHITE_KING = 0,
+    WHITE_QUEEN = 1,
+    WHITE_ROOK = 2,
+    WHITE_BISHOP = 3,
+    WHITE_KNIGHT = 4,
+    WHITE_PAWN = 5,
+    BLACK_KING = 6,
+    BLACK_QUEEN = 7,
+    BLACK_ROOK = 8,
+    BLACK_BISHOP = 9,
+    BLACK_KNIGHT = 10,
+    BLACK_PAWN = 11,
 };
 
 U64 bitboards[12];
