@@ -25,6 +25,21 @@ U64 bitboards[12];
 
 char *movesPtr;
 
+// Convert from algebraic notation to bitboard representation
+U64 an_to_bitboard(char *an)
+{
+    char file, rank;
+    U64 bitboard;
+
+    file = an[0];
+    rank = an[1];
+    bitboard = 1ULL;
+
+    bitboard = bitboard << (104 - file);
+    bitboard = bitboard << (8 * (rank - 49));
+    return bitboard;
+}
+
 char *find_moves(char start_pos[]) {
     // allocate space for 42 bytes (2 chars for rank and file times 21 maximum potential moves per piece)
     movesPtr = calloc(42, sizeof(char));
