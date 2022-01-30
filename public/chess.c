@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include "emscripten.h"
 
 /* 8x8 bitboards are stored as 64 bit unsigned integers.
@@ -60,6 +61,22 @@ U64 an_to_bitboard(char *an)
     return bitboard;
 }
 
+// Return a bitboard containing all of one side's pieces
+U64 my_bitboard(bool is_white)
+{
+    U64 my_bb = 0ULL;
+    int i = 0;
+    int max_i;
+    if (!is_white) {
+        i = i + 6;
+    }
+    max_i = i + 6;
+    for ( ; i < max_i; i++) {
+        my_bb = my_bb | bitboards[i];
+    }
+    return my_bb;
+}
+
 char *find_moves(char start_pos[]) {
     // allocate space for 42 bytes (2 chars for rank and file times 21 maximum potential moves per piece)
     movesPtr = calloc(42, sizeof(char));
@@ -68,7 +85,9 @@ char *find_moves(char start_pos[]) {
 
     U64 start_pos_bb = an_to_bitboard(start_pos);
     for (int i = 0; i < 12; i++) {
-        ;
+        if (start_pos_bb & bitboards[i]) {
+            ;
+        }
     }
 
     return movesPtr;
