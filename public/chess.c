@@ -77,6 +77,23 @@ U64 my_bitboard(bool is_white)
     return my_bb;
 }
 
+U64 knight_pattern(U64 start_pos, bool is_white)
+{
+    U64 moves = 0ULL;
+    U64 not_my_bb = ~my_bitboard(is_white);
+
+    moves = moves | ((start_pos << 15) & not_my_bb & ~FILE_A);
+    moves = moves | ((start_pos <<  6) & not_my_bb & ~FILE_A & ~FILE_B);
+    moves = moves | ((start_pos >> 10) & not_my_bb & ~FILE_A & ~FILE_B);
+    moves = moves | ((start_pos >> 17) & not_my_bb & ~FILE_A);
+    moves = moves | ((start_pos >> 15) & not_my_bb & ~FILE_H);
+    moves = moves | ((start_pos >>  6) & not_my_bb & ~FILE_H & ~FILE_G);
+    moves = moves | ((start_pos << 10) & not_my_bb & ~FILE_H & ~FILE_G);
+    moves = moves | ((start_pos << 17) & not_my_bb & ~FILE_H);
+
+    return moves;
+}
+
 char *find_moves(char start_pos[]) {
     // allocate space for 42 bytes (2 chars for rank and file times 21 maximum potential moves per piece)
     movesPtr = calloc(42, sizeof(char));
