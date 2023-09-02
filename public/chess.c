@@ -44,6 +44,23 @@ enum Piece_Type {
 
 U64 bitboards[12];
 
+// Standard start position
+void set_start_bitboards()
+{
+    bitboards[WHITE_KING] = (U64)8;
+    bitboards[WHITE_QUEEN] = (U64)16;
+    bitboards[WHITE_ROOK] = (U64)129;
+    bitboards[WHITE_BISHOP] = (U64)36;
+    bitboards[WHITE_KNIGHT] = (U64)66;
+    bitboards[WHITE_PAWN] = (U64)65280;
+    bitboards[BLACK_KING] = (U64)576460752303423488;
+    bitboards[BLACK_QUEEN] = (U64)1152921504606846976;
+    bitboards[BLACK_ROOK] = (U64)9295429630892703744;
+    bitboards[BLACK_BISHOP] = (U64)2594073385365405696;
+    bitboards[BLACK_KNIGHT] = (U64)4755801206503243776;
+    bitboards[BLACK_PAWN] = (U64)71776119061217280;
+}
+
 char *movesPtr;
 
 // Convert from algebraic notation to bitboard representation
@@ -95,10 +112,15 @@ U64 knight_pattern(U64 start_pos, bool is_white)
 }
 
 char *find_moves(char start_pos[]) {
+
+    printf("lets play chess!\n");
+
     // allocate space for 42 bytes (2 chars for rank and file times 21 maximum potential moves per piece)
     movesPtr = calloc(42, sizeof(char));
     movesPtr[0] = 'e';
     movesPtr[1] = '4';
+    movesPtr[2] = 'e';
+    movesPtr[3] = '5';
 
     U64 start_pos_bb = an_to_bitboard(start_pos);
     for (int i = 0; i < 12; i++) {

@@ -60,7 +60,9 @@ function isLightSquare(file, rank) {
     }
 }
 
+// cwrapped functions
 const find_moves = Module.cwrap('find_moves', 'number', ['string']);
+const set_start_bitboards = Module.cwrap('set_start_bitboards', null);
 
 class Game {
     constructor(boardElement, perspective, fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
@@ -102,6 +104,7 @@ class Game {
 
     // Fill the board squares with pieces according to the fen string and the player perspective
     fillBoardFromFen() {
+        // Interface
         let piecePlacement = this.fen.split(' ')[0];
         if (this.perspective == PlayerColor.Black) {
             piecePlacement = reverseString(piecePlacement);
@@ -157,6 +160,8 @@ class Game {
                 }
             }
         }
+        // Bitboards/Data
+        set_start_bitboards();
     }
 
     listenForMoves() {
