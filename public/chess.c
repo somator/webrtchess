@@ -42,6 +42,24 @@ enum Piece_Type {
     BLACK_PAWN = 11,
 };
 
+typedef struct {
+    char *piece_placement;
+    char active_color;
+    char *castling_availability;
+    char *en_passant_target;
+    int halfmove_clock;
+    int fullmove_number;
+} Fen;
+
+Fen fen = {
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
+    'w',
+    "KQkq",
+    "-",
+    0,
+    1,
+};
+
 U64 bitboards[12];
 
 // Standard start position
