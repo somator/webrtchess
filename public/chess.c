@@ -141,7 +141,26 @@ U64 opp_bitboard(bool is_white)
 U64 king_pattern(U64 start_pos, bool is_white)
 {
     U64 moves = 0ULL;
-    // to do
+    U64 not_my_bb = ~my_bitboard(is_white);
+    U64 possible_move;
+
+    possible_move = (start_pos << 8) & not_my_bb & ~RANK_1;
+    moves = moves | possible_move;
+    possible_move = (start_pos >> 1) & not_my_bb & ~FILE_A;
+    moves = moves | possible_move;
+    possible_move = (start_pos >> 8) & not_my_bb & ~RANK_8;
+    moves = moves | possible_move;
+    possible_move = (start_pos << 1) & not_my_bb & ~FILE_H;
+    moves = moves | possible_move;
+    possible_move = (start_pos << 7) & not_my_bb & ~FILE_A & ~RANK_1;
+    moves = moves | possible_move;
+    possible_move = (start_pos >> 9) & not_my_bb & ~FILE_A & ~RANK_8;
+    moves = moves | possible_move;
+    possible_move = (start_pos >> 7) & not_my_bb & ~FILE_H & ~RANK_8;
+    moves = moves | possible_move;
+    possible_move = (start_pos << 9) & not_my_bb & ~FILE_H & ~RANK_1;
+    moves = moves | possible_move;
+
     return moves;
 }
 
@@ -275,7 +294,44 @@ U64 knight_pattern(U64 start_pos, bool is_white)
 U64 pawn_pattern(U64 start_pos, bool is_white)
 {
     U64 moves = 0ULL;
-    // to do
+    U64 opp_bb = opp_bitboard(is_white);
+    U64 ep_target = an_to_bitboard(fen.en_passant_target);
+    U64 forward_and_to_left;
+    U64 forward_and_to_right;
+
+    if (is_white) {
+        if (unoccupied_square(start_pos << 8)) {
+            moves = moves | (start_pos << 8);
+            if (rank(start_pos) == 2 && unoccupied_square(start_pos << 16)) {
+                moves = moves | (start_pos << 16);
+            }
+        }
+        forward_and_to_left = start_pos << 9;
+        forward_and_to_right = start_pos << 7;
+        if ((opp_bb | ep_target) & (forward_and_to_left & ~FILE_H)) {
+            moves = moves | forward_and_to_left;
+        }
+        else if ((opp_bb | ep_target) & (forward_and_to_right & ~FILE_A)) {
+            moves = moves | forward_and_to_right;
+        }
+    }
+    else {
+        if (unoccupied_square(start_pos >> 8)) {
+            moves = moves | (start_pos >> 8);
+            if (rank(start_pos) == 7 && unoccupied_square(start_pos >> 16)) {
+                moves = moves | (start_pos >> 16);
+            }
+        }
+        forward_and_to_left = start_pos >> 9;
+        forward_and_to_right = start_pos >> 7;
+        if ((opp_bb | ep_target) & (forward_and_to_left & ~FILE_A)) {
+            moves = moves | forward_and_to_left;
+        }
+        else if ((opp_bb | ep_target) & (forward_and_to_right & ~FILE_H)) {
+            moves = moves | forward_and_to_right;
+        }
+    }
+
     return moves;
 }
 
