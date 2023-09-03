@@ -131,6 +131,13 @@ U64 my_bitboard(bool is_white)
     }
     return my_bb;
 }
+
+// Return a bitboard containing all of the opposition's pieces
+U64 opp_bitboard(bool is_white)
+{
+    return my_bitboard(!is_white);
+}
+
 U64 king_pattern(U64 start_pos, bool is_white)
 {
     U64 moves = 0ULL;
