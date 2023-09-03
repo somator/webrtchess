@@ -47,18 +47,18 @@ U64 bitboards[12];
 // Standard start position
 void set_start_bitboards()
 {
-    bitboards[WHITE_KING] = (U64)8;
-    bitboards[WHITE_QUEEN] = (U64)16;
-    bitboards[WHITE_ROOK] = (U64)129;
-    bitboards[WHITE_BISHOP] = (U64)36;
-    bitboards[WHITE_KNIGHT] = (U64)66;
-    bitboards[WHITE_PAWN] = (U64)65280;
-    bitboards[BLACK_KING] = (U64)576460752303423488;
-    bitboards[BLACK_QUEEN] = (U64)1152921504606846976;
-    bitboards[BLACK_ROOK] = (U64)9295429630892703744;
-    bitboards[BLACK_BISHOP] = (U64)2594073385365405696;
-    bitboards[BLACK_KNIGHT] = (U64)4755801206503243776;
-    bitboards[BLACK_PAWN] = (U64)71776119061217280;
+    bitboards[WHITE_KING] = 8ULL;
+    bitboards[WHITE_QUEEN] = 16ULL;
+    bitboards[WHITE_ROOK] = 129ULL;
+    bitboards[WHITE_BISHOP] = 36ULL;
+    bitboards[WHITE_KNIGHT] = 66ULL;
+    bitboards[WHITE_PAWN] = 65280ULL;
+    bitboards[BLACK_KING] = 576460752303423488ULL;
+    bitboards[BLACK_QUEEN] = 1152921504606846976ULL;
+    bitboards[BLACK_ROOK] = 9295429630892703744ULL;
+    bitboards[BLACK_BISHOP] = 2594073385365405696ULL;
+    bitboards[BLACK_KNIGHT] = 4755801206503243776ULL;
+    bitboards[BLACK_PAWN] = 71776119061217280ULL;
 }
 
 // Calculated moves will be stored in this array of chars representating algebraic notation
