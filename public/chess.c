@@ -138,6 +138,18 @@ U64 opp_bitboard(bool is_white)
     return my_bitboard(!is_white);
 }
 
+// Return a bitboard containing all pieces
+U64 all_bitboard()
+{
+    U64 all_bb = 0ULL;
+    int i;
+
+    for (i = 0; i < 12; i++) {
+        all_bb = all_bb | bitboards[i];
+    }
+    return all_bb;
+}
+
 U64 king_pattern(U64 start_pos, bool is_white)
 {
     U64 moves = 0ULL;
