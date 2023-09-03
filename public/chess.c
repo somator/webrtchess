@@ -113,6 +113,33 @@ U64 my_bitboard(bool is_white)
     }
     return my_bb;
 }
+U64 king_pattern(U64 start_pos, bool is_white)
+{
+    U64 moves = 0ULL;
+    // to do
+    return moves;
+}
+
+U64 queen_pattern(U64 start_pos, bool is_white)
+{
+    U64 moves = 0ULL;
+    // to do
+    return moves;
+}
+
+U64 rook_pattern(U64 start_pos, bool is_white)
+{
+    U64 moves = 0ULL;
+    // to do
+    return moves;
+}
+
+U64 bishop_pattern(U64 start_pos, bool is_white)
+{
+    U64 moves = 0ULL;
+    // to do
+    return moves;
+}
 
 U64 knight_pattern(U64 start_pos, bool is_white)
 {
@@ -128,6 +155,13 @@ U64 knight_pattern(U64 start_pos, bool is_white)
     moves = moves | ((start_pos << 10) & not_my_bb & ~FILE_H & ~FILE_G);
     moves = moves | ((start_pos << 17) & not_my_bb & ~FILE_H);
 
+    return moves;
+}
+
+U64 pawn_pattern(U64 start_pos, bool is_white)
+{
+    U64 moves = 0ULL;
+    // to do
     return moves;
 }
 
@@ -149,14 +183,41 @@ char *find_moves(char start_pos[]) {
             }
 
             // Determine Piece
-            // Knight
-            if (i % 6 == 4) {
-                moves = knight_pattern(start_pos_bb, is_white);
-                bitboard_to_an(moves);
-            }
-            else {
-                // Allocate memory to movesPtr in edge case where bitboard_to_an isn't called
-                movesPtr = calloc(42, sizeof(char));
+            switch(i % 6) {
+                // King
+                case 0:
+                    moves = king_pattern(start_pos_bb, is_white);
+                    bitboard_to_an(moves);
+                    break;
+                // Queen
+                case 1:
+                    moves = queen_pattern(start_pos_bb, is_white);
+                    bitboard_to_an(moves);
+                    break;
+                // Rook
+                case 2:
+                    moves = rook_pattern(start_pos_bb, is_white);
+                    bitboard_to_an(moves);
+                    break;
+                // Bishop
+                case 3:
+                    moves = bishop_pattern(start_pos_bb, is_white);
+                    bitboard_to_an(moves);
+                    break;
+                // Knight
+                case 4:
+                    moves = knight_pattern(start_pos_bb, is_white);
+                    bitboard_to_an(moves);
+                    break;
+                // Pawn
+                case 5:
+                    moves = pawn_pattern(start_pos_bb, is_white);
+                    bitboard_to_an(moves);
+                    break;
+                // Default
+                default:
+                    // Allocate memory to movesPtr in edge case where bitboard_to_an isn't called
+                    movesPtr = calloc(42, sizeof(char));
             }
         }
     }
