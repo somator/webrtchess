@@ -130,7 +130,30 @@ U64 queen_pattern(U64 start_pos, bool is_white)
 U64 rook_pattern(U64 start_pos, bool is_white)
 {
     U64 moves = 0ULL;
-    // to do
+    U64 not_my_bb = ~my_bitboard(is_white);
+    U64 possible_move;
+
+    possible_move = start_pos;
+    while (possible_move) {
+        possible_move = (possible_move << 8) & not_my_bb & ~RANK_1;
+        moves = moves | possible_move;
+    }
+    possible_move = start_pos;
+    while (possible_move) {
+        possible_move = (possible_move >> 1) & not_my_bb & ~FILE_A;
+        moves = moves | possible_move;
+    }
+    possible_move = start_pos;
+    while (possible_move) {
+        possible_move = (possible_move >> 8) & not_my_bb & ~RANK_8;
+        moves = moves | possible_move;
+    }
+    possible_move = start_pos;
+    while (possible_move) {
+        possible_move = (possible_move << 1) & not_my_bb & ~FILE_H;
+        moves = moves | possible_move;
+    }
+
     return moves;
 }
 
