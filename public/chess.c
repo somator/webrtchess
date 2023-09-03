@@ -163,7 +163,14 @@ bool unoccupied_square(U64 square)
 // Return the rank of a square
 int rank(U64 square)
 {
-    return (lsb(square) / 8) + 1;
+    int bitshift_me = 1ULL;
+    for (int i=0; i<64; i++) {
+        if (square & bitshift_me) {
+            return ((i / 8) + 1);
+        }
+        bitshift_me = bitshift_me << 1;
+    }
+    return 0;
 }
 
 U64 king_pattern(U64 start_pos, bool is_white)
