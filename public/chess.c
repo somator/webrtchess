@@ -78,6 +78,25 @@ U64 an_to_bitboard(char *an)
     return bitboard;
 }
 
+char *bitboard_to_an(U64 bitboard) {
+    // allocate space for 42 bytes (2 chars for rank and file times 21 maximum potential moves per piece)
+    char *an = calloc(42, sizeof(char));
+    int an_index = 0;
+    U64 single_pos = 1ULL;
+    for (int i = 0; i < 64; i++) {
+        if (bitboard & single_pos) {
+            // Determine File
+            an[an_index] = ('h' - (i % 8));
+            an_index++;
+            // Determine Rank
+            an[an_index] = ((i / 8) + '1');
+            an_index++;
+        }
+        single_pos = single_pos << 1;
+    }
+    return an;
+}
+
 // Return a bitboard containing all of one side's pieces
 U64 my_bitboard(bool is_white)
 {
@@ -122,6 +141,8 @@ char *find_moves(char start_pos[]) {
     movesPtr[2] = 'e';
     movesPtr[3] = '5';
 
+    U64 moves;
+
     bool is_white;
 
     U64 start_pos_bb = an_to_bitboard(start_pos);
@@ -132,6 +153,13 @@ char *find_moves(char start_pos[]) {
                 is_white = true;
             } else {
                 is_white = false;
+            }
+
+            // Determine Piece
+            // Knight
+            if (i % 6 == 4) {
+                moves = knight_pattern(start_pos_bb, is_white);
+                movesPtr = bitboard_to_an(moves);
             }
         }
     }
