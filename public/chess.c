@@ -150,6 +150,22 @@ U64 all_bitboard()
     return all_bb;
 }
 
+// Return true if a square is unoccupied
+bool unoccupied_square(U64 square)
+{
+    if ((all_bitboard() & square) == 0) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+// Return the rank of a square
+int rank(U64 square)
+{
+    return (lsb(square) / 8) + 1;
+}
+
 U64 king_pattern(U64 start_pos, bool is_white)
 {
     U64 moves = 0ULL;
