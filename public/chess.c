@@ -61,6 +61,7 @@ void set_start_bitboards()
     bitboards[BLACK_PAWN] = (U64)71776119061217280;
 }
 
+// Calculated moves will be stored in this array of chars representating algebraic notation
 char *movesPtr;
 
 // Convert from algebraic notation to bitboard representation
@@ -78,23 +79,23 @@ U64 an_to_bitboard(char *an)
     return bitboard;
 }
 
-char *bitboard_to_an(U64 bitboard) {
+// Convert from bitboard representation to algebraic notation and store in movesPtr
+void bitboard_to_an(U64 bitboard) {
     // allocate space for 42 bytes (2 chars for rank and file times 21 maximum potential moves per piece)
-    char *an = calloc(42, sizeof(char));
-    int an_index = 0;
+    movesPtr = calloc(42, sizeof(char));
+    int movesPtr_index = 0;
     U64 single_pos = 1ULL;
     for (int i = 0; i < 64; i++) {
         if (bitboard & single_pos) {
             // Determine File
-            an[an_index] = ('h' - (i % 8));
-            an_index++;
+            movesPtr[movesPtr_index] = ('h' - (i % 8));
+            movesPtr_index++;
             // Determine Rank
-            an[an_index] = ((i / 8) + '1');
-            an_index++;
+            movesPtr[movesPtr_index] = ((i / 8) + '1');
+            movesPtr_index++;
         }
         single_pos = single_pos << 1;
     }
-    return an;
 }
 
 // Return a bitboard containing all of one side's pieces
@@ -131,19 +132,11 @@ U64 knight_pattern(U64 start_pos, bool is_white)
 }
 
 char *find_moves(char start_pos[]) {
-
-    printf("lets play chess!\n");
-
-    // allocate space for 42 bytes (2 chars for rank and file times 21 maximum potential moves per piece)
-    movesPtr = calloc(42, sizeof(char));
-    movesPtr[0] = 'e';
-    movesPtr[1] = '4';
-    movesPtr[2] = 'e';
-    movesPtr[3] = '5';
-
     U64 moves;
-
     bool is_white;
+
+    // Deallocate movesPtr, will be allocated again inside bitboard_to_an function call
+    free(movesPtr);
 
     U64 start_pos_bb = an_to_bitboard(start_pos);
     for (int i = 0; i < 12; i++) {
@@ -159,7 +152,11 @@ char *find_moves(char start_pos[]) {
             // Knight
             if (i % 6 == 4) {
                 moves = knight_pattern(start_pos_bb, is_white);
-                movesPtr = bitboard_to_an(moves);
+                bitboard_to_an(moves);
+            }
+            else {
+                // Allocate memory to movesPtr in edge case where bitboard_to_an isn't called
+                movesPtr = calloc(42, sizeof(char));
             }
         }
     }
