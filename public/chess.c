@@ -122,10 +122,17 @@ char *find_moves(char start_pos[]) {
     movesPtr[2] = 'e';
     movesPtr[3] = '5';
 
+    bool is_white;
+
     U64 start_pos_bb = an_to_bitboard(start_pos);
     for (int i = 0; i < 12; i++) {
         if (start_pos_bb & bitboards[i]) {
-            ;
+            // Determine Color
+            if (i < 6) {
+                is_white = true;
+            } else {
+                is_white = false;
+            }
         }
     }
 
