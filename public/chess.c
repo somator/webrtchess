@@ -506,8 +506,6 @@ char *make_move(char start_pos[], char end_pos[]) {
 
     U64 start_pos_bb = an_to_bitboard(start_pos);
     U64 end_pos_bb = an_to_bitboard(start_pos);
-
-    U64 start_pos_bb = an_to_bitboard(start_pos);
     for (int i = 0; i < 12; i++) {
         if (start_pos_bb & bitboards[i]) {
             // Determine Color
