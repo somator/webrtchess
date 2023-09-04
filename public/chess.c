@@ -216,6 +216,13 @@ bool string_contains(char *string, char c)
     }
 }
 
+char *stringify_fen()
+{
+    char result[100];
+    sprintf(result, "%s %c %s %s %i %i", fen.piece_placement, fen.active_color, fen.castling_availability, fen.en_passant_target, fen.halfmove_clock, fen.fullmove_number);
+    return result;
+}
+
 U64 king_pattern(U64 start_pos, bool is_white)
 {
     U64 moves = 0ULL;
@@ -440,7 +447,8 @@ U64 pawn_pattern(U64 start_pos, bool is_white)
     return moves;
 }
 
-char *find_moves(char start_pos[]) {
+char *find_moves(char start_pos[]) 
+{
     U64 moves;
     bool is_white;
 
@@ -500,7 +508,8 @@ char *find_moves(char start_pos[]) {
     return movesPtr;
 }
 
-char *make_move(char start_pos[], char end_pos[]) {
+char *make_move(char start_pos[], char end_pos[]) 
+{
     bool is_white;
     int piece_type;
     char return_value[100] = "to do";
