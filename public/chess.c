@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 #include "emscripten.h"
 
 /* 8x8 bitboards are stored as 64 bit unsigned integers.
@@ -558,9 +559,36 @@ char *make_move(char start_pos[], char end_pos[]) {
             }
             // Pawn
             else if (piece_type == 5) {
+                // Non-capture
                 if (file(start_pos_bb) == file(end_pos_bb)) {
                     // And the bitwise complement of our start position to our bitboard to remove it from start position
                     bitboards[i] = bitboards[i] & ~start_pos_bb;
+                    // Or the end position to our bitboard to add it to the end position
+                    bitboards[i] = bitboards[i] | end_pos_bb;
+                }
+                // En Passant
+                else if (strcmp(end_pos, fen.en_passant_target)) {
+                    if (is_white) {
+                        // Remove captured pawn
+                        bitboards[11] = bitboards[11] & ~(end_pos_bb >> 8);
+                    }
+                    else {
+                        // Remove captured pawn
+                        bitboards[5] = bitboards[5] & ~(end_pos_bb << 8);
+                    }
+                    // And the bitwise complement of our start position to our bitboard to remove it from start position
+                    bitboards[i] = bitboards[i] & ~start_pos_bb;
+                    // Or the end position to our bitboard to add it to the end position
+                    bitboards[i] = bitboards[i] | end_pos_bb;
+                }
+                // Regular capture
+                else {
+                    // And the bitwise complement of our start position to our bitboard to remove it from start position
+                    bitboards[i] = bitboards[i] & ~start_pos_bb;
+                    // And the bitwise complement of our end position to each bitboard to remove any captured piece
+                    for (int j = 0; j < 12; j++) {
+                        bitboards[j] = bitboards[j] & ~end_pos_bb;
+                    }
                     // Or the end position to our bitboard to add it to the end position
                     bitboards[i] = bitboards[i] | end_pos_bb;
                 }
