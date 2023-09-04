@@ -173,6 +173,19 @@ int rank(U64 square)
     return 0;
 }
 
+// Return the file of a square
+char file(U64 square)
+{
+    U64 bitshift_me = 1ULL;
+    for (int i=0; i<64; i++) {
+        if (square & bitshift_me) {
+            return ('h' - (i % 8));
+        }
+        bitshift_me = bitshift_me << 1;
+    }
+    return '0';
+}
+
 // Return true if string contains a certain character
 bool string_contains(char *string, char c)
 {
