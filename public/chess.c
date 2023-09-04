@@ -468,3 +468,72 @@ char *find_moves(char start_pos[]) {
 
     return movesPtr;
 }
+
+char *make_move(char start_pos[], char end_pos[]) {
+    bool is_white;
+    int piece_type;
+    char return_value[100] = "to do";
+
+    U64 start_pos_bb = an_to_bitboard(start_pos);
+    U64 end_pos_bb = an_to_bitboard(start_pos);
+
+    U64 start_pos_bb = an_to_bitboard(start_pos);
+    for (int i = 0; i < 12; i++) {
+        if (start_pos_bb & bitboards[i]) {
+            // Determine Color
+            if (i < 6) {
+                is_white = true;
+            } else {
+                is_white = false;
+            }
+            // Determine Piece Type
+            piece_type = i % 6;
+
+            // Queen, Rook, Bishop, and Knight
+            if (piece_type>0 && piece_type<5) {
+                // And the bitwise complement of our start position to our bitboard to remove it from start position
+                bitboards[i] = bitboards[i] & ~start_pos_bb;
+                // And the bitwise complement of our end position to each bitboard to remove any captured piece
+                for (int j = 0; j < 12; j++) {
+                    bitboards[j] = bitboards[j] & ~end_pos_bb;
+                }
+                // Or the end position to our bitboard to add it to the end position
+                bitboards[i] = bitboards[i] | end_pos_bb;
+            }
+            // King
+            else if (piece_type == 0) {
+                // Castling
+                // King side castling
+                if (start_pos_bb >> 2 == end_pos_bb) {
+                    // Remove rook
+                    bitboards[i+2] = bitboards[i+2] & ~(end_pos_bb >> 1);
+                    // Add rook
+                    bitboards[i+2] = bitboards[i+2] | (end_pos_bb << 1);
+                }
+                // Queen side castling
+                else if (start_pos_bb << 2 == end_pos_bb) {
+                    // Remove rook
+                    bitboards[i+2] = bitboards[i+2] & ~(end_pos_bb << 2);
+                    // Add rook
+                    bitboards[i+2] = bitboards[i+2] | (end_pos_bb >> 1);
+                }
+                else {
+                    // And the bitwise complement of our start position to our bitboard to remove it from start position
+                    bitboards[i] = bitboards[i] & ~start_pos_bb;
+                    // And the bitwise complement of our end position to each bitboard to remove any captured piece
+                    for (int j = 0; j < 12; j++) {
+                        bitboards[j] = bitboards[j] & ~end_pos_bb;
+                    }
+                    // Or the end position to our bitboard to add it to the end position
+                    bitboards[i] = bitboards[i] | end_pos_bb;
+                }
+            }
+            // Pawn
+            else if (piece_type == 5) {
+
+            }
+        }
+    }
+
+    return return_value;
+}
