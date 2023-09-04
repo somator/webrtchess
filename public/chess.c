@@ -173,6 +173,18 @@ int rank(U64 square)
     return 0;
 }
 
+// Return true if string contains a certain character
+bool string_contains(char *string, char c)
+{
+    if (*string == c) {
+        return 1;
+    } else if (*string == '\0') {
+        return 0;
+    } else {
+        return string_contains(string + 1, c);
+    }
+}
+
 U64 king_pattern(U64 start_pos, bool is_white)
 {
     U64 moves = 0ULL;
