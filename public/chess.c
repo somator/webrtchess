@@ -208,6 +208,33 @@ U64 king_pattern(U64 start_pos, bool is_white)
     possible_move = (start_pos << 9) & not_my_bb & ~FILE_H & ~RANK_1;
     moves = moves | possible_move;
 
+    // Castling
+    if (is_white) {
+        if (string_contains(fen.castling_availability, 'K')) {
+            if (unoccupied_square(2ULL) && unoccupied_square(4ULL)) {
+                moves = moves | 2ULL;
+            }
+        }
+        else if (string_contains(fen.castling_availability, 'Q')) {
+            if (unoccupied_square(16ULL) && unoccupied_square(32ULL) && unoccupied_square(64ULL)) {
+                moves = moves | 32ULL;
+            }
+        }
+    }
+    // Black
+    else {
+        if (string_contains(fen.castling_availability, 'k')) {
+            if (unoccupied_square(144115188075855872ULL) && unoccupied_square(288230376151711744ULL)) {
+                moves = moves | 144115188075855872ULL;
+            }
+        }
+        else if (string_contains(fen.castling_availability, 'q')) {
+            if (unoccupied_square(1152921504606846976ULL) && unoccupied_square(2305843009213693952ULL) && unoccupied_square(4611686018427387904ULL)) {
+                moves = moves | 2305843009213693952ULL;
+            }
+        }
+    }
+
     return moves;
 }
 
