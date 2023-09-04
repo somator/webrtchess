@@ -98,7 +98,7 @@ U64 an_to_bitboard(char *an)
 }
 
 // Convert from bitboard representation to algebraic notation and store in movesPtr
-void bitboard_to_an(U64 bitboard) {
+void update_moves(U64 bitboard) {
     // allocate space for 42 bytes (2 chars for rank and file times 21 maximum potential moves per piece)
     movesPtr = calloc(42, sizeof(char));
     int movesPtr_index = 0;
@@ -426,7 +426,7 @@ char *find_moves(char start_pos[]) {
     U64 moves;
     bool is_white;
 
-    // Deallocate movesPtr, will be allocated again inside bitboard_to_an function call
+    // Deallocate movesPtr, will be allocated again inside update_moves function call
     free(movesPtr);
 
     U64 start_pos_bb = an_to_bitboard(start_pos);
@@ -444,36 +444,36 @@ char *find_moves(char start_pos[]) {
                 // King
                 case 0:
                     moves = king_pattern(start_pos_bb, is_white);
-                    bitboard_to_an(moves);
+                    update_moves(moves);
                     break;
                 // Queen
                 case 1:
                     moves = queen_pattern(start_pos_bb, is_white);
-                    bitboard_to_an(moves);
+                    update_moves(moves);
                     break;
                 // Rook
                 case 2:
                     moves = rook_pattern(start_pos_bb, is_white);
-                    bitboard_to_an(moves);
+                    update_moves(moves);
                     break;
                 // Bishop
                 case 3:
                     moves = bishop_pattern(start_pos_bb, is_white);
-                    bitboard_to_an(moves);
+                    update_moves(moves);
                     break;
                 // Knight
                 case 4:
                     moves = knight_pattern(start_pos_bb, is_white);
-                    bitboard_to_an(moves);
+                    update_moves(moves);
                     break;
                 // Pawn
                 case 5:
                     moves = pawn_pattern(start_pos_bb, is_white);
-                    bitboard_to_an(moves);
+                    update_moves(moves);
                     break;
                 // Default
                 default:
-                    // Allocate memory to movesPtr in edge case where bitboard_to_an isn't called
+                    // Allocate memory to movesPtr in edge case where update_moves isn't called
                     movesPtr = calloc(42, sizeof(char));
             }
         }
@@ -543,7 +543,12 @@ char *make_move(char start_pos[], char end_pos[]) {
             }
             // Pawn
             else if (piece_type == 5) {
-
+                if (file(start_pos_bb) == file(end_pos_bb)) {
+                    // And the bitwise complement of our start position to our bitboard to remove it from start position
+                    bitboards[i] = bitboards[i] & ~start_pos_bb;
+                    // Or the end position to our bitboard to add it to the end position
+                    bitboards[i] = bitboards[i] | end_pos_bb;
+                }
             }
         }
     }
