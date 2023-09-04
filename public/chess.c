@@ -97,7 +97,24 @@ U64 an_to_bitboard(char *an)
     return bitboard;
 }
 
-// Convert from bitboard representation to algebraic notation and store in movesPtr
+// Convert from bitboard representation to algebraic notation and return it as a string
+char *bitboard_to_an(U64 bitboard) {
+    char an[2];
+    U64 single_pos = 1ULL;
+    for (int i = 0; i < 64; i++) {
+        if (bitboard & single_pos) {
+            // Determine File
+            an[0] = ('h' - (i % 8));
+            // Determine Rank
+            an[1] = ((i / 8) + '1');
+            return an;
+        }
+        single_pos = single_pos << 1;
+    }
+    return "";
+}
+
+// Convert from bitboard representation to algebraic notation (multiple moves) and store in movesPtr
 void update_moves(U64 bitboard) {
     // allocate space for 42 bytes (2 chars for rank and file times 21 maximum potential moves per piece)
     movesPtr = calloc(42, sizeof(char));
