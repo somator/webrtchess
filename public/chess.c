@@ -163,7 +163,7 @@ bool unoccupied_square(U64 square)
 // Return the rank of a square
 int rank(U64 square)
 {
-    int bitshift_me = 1ULL;
+    U64 bitshift_me = 1ULL;
     for (int i=0; i<64; i++) {
         if (square & bitshift_me) {
             return ((i / 8) + 1);
