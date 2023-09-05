@@ -73,6 +73,7 @@ class Game {
         this.selectedSquare;
         this.potentialMoves = [];
         this.annotateSquares();
+        set_start_bitboards();
         this.fillBoardFromFen();
         this.listenForMoves();
     }
@@ -114,9 +115,23 @@ class Game {
         let squareIndex = 0;
         for (const char of piecePlacement) {
             if (!isNaN(char)) {
-                squareIndex += parseInt(char);
+                for (let i = 0; i < parseInt(char); i++) {
+                    let square = squares[squareIndex];
+                    // remove piece if there is one
+                    let previous_piece = square.querySelector('.piece')
+                    if (previous_piece) {
+                        square.removeChild(previous_piece);
+                    }
+                    squareIndex += 1;
+                }
+                // squareIndex += parseInt(char);
             } else if (char.match(/[a-z]/i)) {
                 let square = squares[squareIndex];
+                // remove piece if there is one
+                let previous_piece = square.querySelector('.piece')
+                if (previous_piece) {
+                    square.removeChild(previous_piece);
+                }
                 squareIndex += 1;
                 switch(char) {
                     case 'P':
@@ -161,8 +176,6 @@ class Game {
                 }
             }
         }
-        // Bitboards/Data
-        set_start_bitboards();
     }
 
     listenForMoves() {
@@ -229,7 +242,7 @@ class Game {
     }
 
     movePiece(startSquare, endSquare) {
-        this.fen = make_move(startSquare, endSquare);
+        this.fen = make_move(startSquare.id, endSquare.id);
         this.fillBoardFromFen()
     }
 }

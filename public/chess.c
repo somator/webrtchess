@@ -65,6 +65,23 @@ char *fen_lookup = "KQRBNPkqrbnp";
 
 U64 bitboards[12];
 
+// Print a single bitboard
+void print_bitboard(U64 bitboard) {
+    U64 bit = 1ULL << 63;
+    for (int i=0; i<64; i++) {
+        if (bit & bitboard) {
+            printf("1");
+        } else {
+            printf("0");
+        }
+        if (i % 8 == 7) {
+            printf("\n");
+        }
+        bit = bit >> 1;
+    }
+    printf("\n");
+}
+
 // Standard start position
 void set_start_bitboards()
 {
@@ -147,9 +164,9 @@ void update_piece_placement() {
 
     // Iterate through 8 rows
     for (int i=0; i<8; i++) {
+        blank_count = 0;
         // Iterate through 8 squares in a row
         for (int j=0; j<8; j++) {
-            blank_count = 0;
             // Iterate through each type of piece
             for (int k=0; k<12; k++) {
                 if (bitboards[k] & square) {
@@ -161,6 +178,7 @@ void update_piece_placement() {
                     }
                     result[result_index] = fen_lookup[k];
                     result_index++;
+                    break;
                 }
                 // Increase blank count if square is unoccupied
                 else if (k == 11) {
@@ -173,6 +191,7 @@ void update_piece_placement() {
         // Check for blank spaces at the end of the row and add them to the result
         if (blank_count != 0) {
             result[result_index] = '0' + blank_count;
+            result_index++;
         }
         // Add slashes to denote a new row
         result[result_index] = '/';
@@ -575,9 +594,9 @@ char *make_move(char start_pos[], char end_pos[])
 {
     bool is_white;
     int piece_type;
-
+    
     U64 start_pos_bb = an_to_bitboard(start_pos);
-    U64 end_pos_bb = an_to_bitboard(start_pos);
+    U64 end_pos_bb = an_to_bitboard(end_pos);
     for (int i = 0; i < 12; i++) {
         if (start_pos_bb & bitboards[i]) {
             // Determine Color
