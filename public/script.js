@@ -229,7 +229,7 @@ class Game {
     }
 
     movePiece(startSquare, endSquare) {
-        this.fen = make_move();
+        this.fen = make_move(startSquare, endSquare);
         this.fillBoardFromFen()
     }
 }
