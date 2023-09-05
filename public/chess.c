@@ -204,6 +204,19 @@ char file(U64 square)
     return '0';
 }
 
+// Remove all chars of a certain type from a string
+void remove_chars(char *s, char c)
+{
+    int writer = 0, reader = 0;
+    while (s[reader]) {
+        if (s[reader] != c) {   
+            s[writer++] = s[reader];
+        }
+        reader++;       
+    }
+    s[writer]=0;
+}
+
 // Return true if string contains a certain character
 bool string_contains(char *string, char c)
 {
