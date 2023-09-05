@@ -63,6 +63,7 @@ function isLightSquare(file, rank) {
 // cwrapped functions
 const find_moves = Module.cwrap('find_moves', 'number', ['string']);
 const set_start_bitboards = Module.cwrap('set_start_bitboards', null);
+const make_move = Module.cwrap('make_move', 'string', ['string', 'string']);
 
 class Game {
     constructor(boardElement, perspective, fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
@@ -228,6 +229,7 @@ class Game {
     }
 
     movePiece(startSquare, endSquare) {
-        console.log("to do");
+        this.fen = make_move();
+        this.fillBoardFromFen()
     }
 }
