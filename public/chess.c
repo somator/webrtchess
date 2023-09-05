@@ -61,6 +61,8 @@ Fen fen = {
     1,
 };
 
+char *fen_lookup = "KQRBNPkqrbnp";
+
 U64 bitboards[12];
 
 // Standard start position
@@ -132,6 +134,54 @@ void update_moves(U64 bitboard) {
         }
         single_pos = single_pos << 1;
     }
+}
+
+// Read bitboards, determine piece placement, and store it in fen.pieceplacement
+void update_piece_placement() {
+    // A bitboard with a single occupied square that will be bitshifted down to 1
+    U64 square = 1ULL << 63;
+    char result[74];
+    int result_index = 0;
+    // A rolling count of each blank square
+    int blank_count = 0;
+
+    // Iterate through 8 rows
+    for (int i=0; i<8; i++) {
+        // Iterate through 8 squares in a row
+        for (int j=0; j<8; j++) {
+            blank_count = 0;
+            // Iterate through each type of piece
+            for (int k=0; k<12; k++) {
+                if (bitboards[k] & square) {
+                    // check for previous blank squares
+                    if (blank_count != 0) {
+                        result[result_index] = '0' + blank_count;
+                        result_index++;
+                        blank_count = 0;
+                    }
+                    result[result_index] = fen_lookup[k];
+                    result_index++;
+                }
+                // Increase blank count if square is unoccupied
+                else if (k == 11) {
+                    blank_count++;
+                }
+            }
+            // Bitshift down to the next square
+            square = square >> 1;
+        }
+        // Check for blank spaces at the end of the row and add them to the result
+        if (blank_count != 0) {
+            result[result_index] = '0' + blank_count;
+        }
+        // Add slashes to denote a new row
+        result[result_index] = '/';
+        result_index++;
+    }
+    // Terminate string at last slash
+    result[result_index-1] = 0;
+    // Copy result to fen.piece_placement
+    strcpy(fen.piece_placement, result);
 }
 
 // Return a bitboard containing all of one side's pieces
