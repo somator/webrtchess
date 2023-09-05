@@ -575,7 +575,6 @@ char *make_move(char start_pos[], char end_pos[])
 {
     bool is_white;
     int piece_type;
-    char return_value[100] = "to do";
 
     U64 start_pos_bb = an_to_bitboard(start_pos);
     U64 end_pos_bb = an_to_bitboard(start_pos);
@@ -710,6 +709,7 @@ char *make_move(char start_pos[], char end_pos[])
             }
         }
     }
+    update_piece_placement();
 
-    return return_value;
+    return stringify_fen();
 }
