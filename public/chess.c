@@ -552,6 +552,21 @@ char *make_move(char start_pos[], char end_pos[])
                 bitboards[i] = bitboards[i] | end_pos_bb;
                 // Update En Passant target
                 fen.en_passant_target = "-";
+                // Update castling availability
+                if (piece_type == 2) {
+                    if (start_pos_bb == 1ULL) {
+                        remove_chars(fen.castling_availability, 'K');
+                    }
+                    else if (start_pos_bb == 128ULL) {
+                        remove_chars(fen.castling_availability, 'Q');
+                    }
+                    else if (start_pos_bb == 72057594037927936ULL) {
+                        remove_chars(fen.castling_availability, 'k');
+                    }
+                    else if (start_pos_bb == 9223372036854775808ULL) {
+                        remove_chars(fen.castling_availability, 'q');
+                    }
+                }
             }
             // King
             else if (piece_type == 0) {
