@@ -700,7 +700,7 @@ char *make_move(char start_pos[], char end_pos[])
                     }
                 }
                 // En Passant
-                else if (strcmp(end_pos, fen.en_passant_target)) {
+                else if (strcmp(end_pos, fen.en_passant_target) == 0) {
                     if (is_white) {
                         // Remove captured pawn
                         bitboards[11] = bitboards[11] & ~(end_pos_bb >> 8);
