@@ -780,6 +780,11 @@ char *make_move(char start_pos[], char end_pos[])
         }
     }
     update_piece_placement();
-
+    // Update active color
+    if (is_white) {
+        fen.active_color = 'b';
+    } else {
+        fen.active_color = 'w';
+    }
     return stringify_fen();
 }
