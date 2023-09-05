@@ -362,47 +362,72 @@ U64 queen_pattern(U64 start_pos, bool is_white)
 {
     U64 moves = 0ULL;
     U64 not_my_bb = ~my_bitboard(is_white);
+    U64 opp_bb = opp_bitboard(is_white);
     U64 possible_move;
 
     possible_move = start_pos;
     while (possible_move) {
         possible_move = (possible_move << 8) & not_my_bb & ~RANK_1;
         moves = moves | possible_move;
+        if (possible_move & opp_bb) {
+            break;
+        }
     }
     possible_move = start_pos;
     while (possible_move) {
         possible_move = (possible_move << 7) & not_my_bb & ~FILE_A & ~RANK_1;
         moves = moves | possible_move;
+        if (possible_move & opp_bb) {
+            break;
+        }
     }
     possible_move = start_pos;
     while (possible_move) {
         possible_move = (possible_move >> 1) & not_my_bb & ~FILE_A;
         moves = moves | possible_move;
+        if (possible_move & opp_bb) {
+            break;
+        }
     }
     possible_move = start_pos;
     while (possible_move) {
         possible_move = (possible_move >> 9) & not_my_bb & ~FILE_A & ~RANK_8;
         moves = moves | possible_move;
+        if (possible_move & opp_bb) {
+            break;
+        }
     }
     possible_move = start_pos;
     while (possible_move) {
         possible_move = (possible_move >> 8) & not_my_bb & ~RANK_8;
         moves = moves | possible_move;
+        if (possible_move & opp_bb) {
+            break;
+        }
     }
     possible_move = start_pos;
     while (possible_move) {
         possible_move = (possible_move >> 7) & not_my_bb & ~FILE_H & ~RANK_8;
         moves = moves | possible_move;
+        if (possible_move & opp_bb) {
+            break;
+        }
     }
     possible_move = start_pos;
     while (possible_move) {
         possible_move = (possible_move << 1) & not_my_bb & ~FILE_H;
         moves = moves | possible_move;
+        if (possible_move & opp_bb) {
+            break;
+        }
     }
     possible_move = start_pos;
     while (possible_move) {
         possible_move = (possible_move << 9) & not_my_bb & ~FILE_H & ~RANK_1;
         moves = moves | possible_move;
+        if (possible_move & opp_bb) {
+            break;
+        }
     }
 
     return moves;
@@ -412,27 +437,40 @@ U64 rook_pattern(U64 start_pos, bool is_white)
 {
     U64 moves = 0ULL;
     U64 not_my_bb = ~my_bitboard(is_white);
+    U64 opp_bb = opp_bitboard(is_white);
     U64 possible_move;
 
     possible_move = start_pos;
     while (possible_move) {
         possible_move = (possible_move << 8) & not_my_bb & ~RANK_1;
         moves = moves | possible_move;
+        if (possible_move & opp_bb) {
+            break;
+        }
     }
     possible_move = start_pos;
     while (possible_move) {
         possible_move = (possible_move >> 1) & not_my_bb & ~FILE_A;
         moves = moves | possible_move;
+        if (possible_move & opp_bb) {
+            break;
+        }
     }
     possible_move = start_pos;
     while (possible_move) {
         possible_move = (possible_move >> 8) & not_my_bb & ~RANK_8;
         moves = moves | possible_move;
+        if (possible_move & opp_bb) {
+            break;
+        }
     }
     possible_move = start_pos;
     while (possible_move) {
         possible_move = (possible_move << 1) & not_my_bb & ~FILE_H;
         moves = moves | possible_move;
+        if (possible_move & opp_bb) {
+            break;
+        }
     }
 
     return moves;
@@ -442,27 +480,40 @@ U64 bishop_pattern(U64 start_pos, bool is_white)
 {
     U64 moves = 0ULL;
     U64 not_my_bb = ~my_bitboard(is_white);
+    U64 opp_bb = opp_bitboard(is_white);
     U64 possible_move;
     
     possible_move = start_pos;
     while (possible_move) {
         possible_move = (possible_move << 7) & not_my_bb & ~FILE_A & ~RANK_1;
         moves = moves | possible_move;
+        if (possible_move & opp_bb) {
+            break;
+        }
     }
     possible_move = start_pos;
     while (possible_move) {
         possible_move = (possible_move >> 9) & not_my_bb & ~FILE_A & ~RANK_8;
         moves = moves | possible_move;
+        if (possible_move & opp_bb) {
+            break;
+        }
     }
     possible_move = start_pos;
     while (possible_move) {
         possible_move = (possible_move >> 7) & not_my_bb & ~FILE_H & ~RANK_8;
         moves = moves | possible_move;
+        if (possible_move & opp_bb) {
+            break;
+        }
     }
     possible_move = start_pos;
     while (possible_move) {
         possible_move = (possible_move << 9) & not_my_bb & ~FILE_H & ~RANK_1;
         moves = moves | possible_move;
+        if (possible_move & opp_bb) {
+            break;
+        }
     }
 
     return moves;
