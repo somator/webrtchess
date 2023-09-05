@@ -580,6 +580,15 @@ char *make_move(char start_pos[], char end_pos[])
                     // Or the end position to our bitboard to add it to the end position
                     bitboards[i] = bitboards[i] | end_pos_bb;
                 }
+                // Update castling availability
+                if (is_white) {
+                    remove_chars(fen.castling_availability, 'K');
+                    remove_chars(fen.castling_availability, 'Q');
+                }
+                else {
+                    remove_chars(fen.castling_availability, 'k');
+                    remove_chars(fen.castling_availability, 'q');
+                }
                 // Update En Passant target
                 fen.en_passant_target = "-";
             }
