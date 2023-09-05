@@ -537,6 +537,8 @@ char *make_move(char start_pos[], char end_pos[])
                 }
                 // Or the end position to our bitboard to add it to the end position
                 bitboards[i] = bitboards[i] | end_pos_bb;
+                // Update En Passant target
+                fen.en_passant_target = "-";
             }
             // King
             else if (piece_type == 0) {
@@ -565,6 +567,8 @@ char *make_move(char start_pos[], char end_pos[])
                     // Or the end position to our bitboard to add it to the end position
                     bitboards[i] = bitboards[i] | end_pos_bb;
                 }
+                // Update En Passant target
+                fen.en_passant_target = "-";
             }
             // Pawn
             else if (piece_type == 5) {
@@ -574,6 +578,21 @@ char *make_move(char start_pos[], char end_pos[])
                     bitboards[i] = bitboards[i] & ~start_pos_bb;
                     // Or the end position to our bitboard to add it to the end position
                     bitboards[i] = bitboards[i] | end_pos_bb;
+                    // Pawn double move
+                    // White
+                    if ((start_pos_bb << 16) == end_pos_bb) {
+                        // Update En Passant target
+                        strcpy(fen.en_passant_target, bitboard_to_an(start_pos_bb << 8));
+                    } 
+                    // Black
+                    else if ((start_pos_bb >> 16) == end_pos_bb) {
+                        // Update En Passant target
+                        strcpy(fen.en_passant_target, bitboard_to_an(start_pos_bb >> 8));
+                    }
+                    else {
+                        // Update En Passant target
+                        fen.en_passant_target = "-";
+                    }
                 }
                 // En Passant
                 else if (strcmp(end_pos, fen.en_passant_target)) {
