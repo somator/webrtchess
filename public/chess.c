@@ -335,7 +335,7 @@ U64 king_pattern(U64 start_pos, bool is_white)
                 moves = moves | 2ULL;
             }
         }
-        else if (string_contains(fen.castling_availability, 'Q')) {
+        if (string_contains(fen.castling_availability, 'Q')) {
             if (unoccupied_square(16ULL) && unoccupied_square(32ULL) && unoccupied_square(64ULL)) {
                 moves = moves | 32ULL;
             }
@@ -348,7 +348,7 @@ U64 king_pattern(U64 start_pos, bool is_white)
                 moves = moves | 144115188075855872ULL;
             }
         }
-        else if (string_contains(fen.castling_availability, 'q')) {
+        if (string_contains(fen.castling_availability, 'q')) {
             if (unoccupied_square(1152921504606846976ULL) && unoccupied_square(2305843009213693952ULL) && unoccupied_square(4611686018427387904ULL)) {
                 moves = moves | 2305843009213693952ULL;
             }
@@ -704,16 +704,14 @@ char *make_move(char start_pos[], char end_pos[])
                     // Add rook
                     bitboards[i+2] = bitboards[i+2] | (end_pos_bb >> 1);
                 }
-                else {
-                    // And the bitwise complement of our start position to our bitboard to remove it from start position
-                    bitboards[i] = bitboards[i] & ~start_pos_bb;
-                    // And the bitwise complement of our end position to each bitboard to remove any captured piece
-                    for (int j = 0; j < 12; j++) {
-                        bitboards[j] = bitboards[j] & ~end_pos_bb;
-                    }
-                    // Or the end position to our bitboard to add it to the end position
-                    bitboards[i] = bitboards[i] | end_pos_bb;
+                // And the bitwise complement of our start position to our bitboard to remove it from start position
+                bitboards[i] = bitboards[i] & ~start_pos_bb;
+                // And the bitwise complement of our end position to each bitboard to remove any captured piece
+                for (int j = 0; j < 12; j++) {
+                    bitboards[j] = bitboards[j] & ~end_pos_bb;
                 }
+                // Or the end position to our bitboard to add it to the end position
+                bitboards[i] = bitboards[i] | end_pos_bb;
                 // Update castling availability
                 if (is_white) {
                     remove_chars(fen.castling_availability, 'K');
