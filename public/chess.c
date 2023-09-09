@@ -574,10 +574,10 @@ U64 pawn_pattern(U64 start_pos, bool is_white)
         }
         forward_and_to_left = start_pos << 9;
         forward_and_to_right = start_pos << 7;
-        if ((opp_bb | (opp_bb & ep_target)) & (forward_and_to_left & ~FILE_H)) {
+        if ((opp_bb | ep_target) & (forward_and_to_left & ~FILE_H)) {
             moves = moves | forward_and_to_left;
         }
-        if ((opp_bb | (opp_bb & ep_target)) & (forward_and_to_right & ~FILE_A)) {
+        if ((opp_bb | ep_target) & (forward_and_to_right & ~FILE_A)) {
             moves = moves | forward_and_to_right;
         }
     }
@@ -590,10 +590,10 @@ U64 pawn_pattern(U64 start_pos, bool is_white)
         }
         forward_and_to_left = start_pos >> 9;
         forward_and_to_right = start_pos >> 7;
-        if ((opp_bb | (opp_bb & ep_target)) & (forward_and_to_left & ~FILE_A)) {
+        if ((opp_bb | ep_target) & (forward_and_to_left & ~FILE_A)) {
             moves = moves | forward_and_to_left;
         }
-        if ((opp_bb | (opp_bb & ep_target)) & (forward_and_to_right & ~FILE_H)) {
+        if ((opp_bb | ep_target) & (forward_and_to_right & ~FILE_H)) {
             moves = moves | forward_and_to_right;
         }
     }
