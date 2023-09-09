@@ -47,7 +47,7 @@ typedef struct {
     char *piece_placement;
     char active_color;
     char *castling_availability;
-    char *en_passant_target;
+    char en_passant_target[3];
     int halfmove_clock;
     int fullmove_number;
 } Fen;
@@ -74,6 +74,26 @@ void print_bitboard(U64 bitboard) {
         } else {
             printf("0");
         }
+        if (i % 8 == 7) {
+            printf("\n");
+        }
+        bit = bit >> 1;
+    }
+    printf("\n");
+}
+
+// Print the full board
+void print_board() {
+    U64 bit = 1ULL << 63;
+    char c;
+    for (int i=0; i<64; i++) {
+        c = '-';
+        for (int j=0; j<12; j++) {
+            if (bit & bitboards[j]) {
+                c = fen_lookup[j];
+            }
+        }
+        printf("%c", c);
         if (i % 8 == 7) {
             printf("\n");
         }
@@ -671,7 +691,7 @@ char *make_move(char start_pos[], char end_pos[])
                 // Or the end position to our bitboard to add it to the end position
                 bitboards[i] = bitboards[i] | end_pos_bb;
                 // Update En Passant target
-                fen.en_passant_target = "-";
+                strcpy(fen.en_passant_target, "-");
                 // Update castling availability
                 if (piece_type == 2) {
                     if (start_pos_bb == 1ULL) {
@@ -723,7 +743,7 @@ char *make_move(char start_pos[], char end_pos[])
                     remove_chars(fen.castling_availability, 'q');
                 }
                 // Update En Passant target
-                fen.en_passant_target = "-";
+                strcpy(fen.en_passant_target, "-");
             }
             // Pawn
             else if (piece_type == 5) {
@@ -746,7 +766,7 @@ char *make_move(char start_pos[], char end_pos[])
                     }
                     else {
                         // Update En Passant target
-                        fen.en_passant_target = "-";
+                        strcpy(fen.en_passant_target, "-");
                     }
                 }
                 // En Passant
