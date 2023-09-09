@@ -662,15 +662,14 @@ char *find_moves(char start_pos[])
     return movesPtr;
 }
 
-char *make_move(char start_pos[], char end_pos[]) 
-{
+void process_move(char start_pos[], char end_pos[], U64 bitboards_arr[], Fen* fen_ptr) {
     bool is_white;
     int piece_type;
 
     U64 start_pos_bb = an_to_bitboard(start_pos);
     U64 end_pos_bb = an_to_bitboard(end_pos);
     for (int i = 0; i < 12; i++) {
-        if (start_pos_bb & bitboards[i]) {
+        if (start_pos_bb & bitboards_arr[i]) {
             // Determine Color
             if (i < 6) {
                 is_white = true;
@@ -683,28 +682,28 @@ char *make_move(char start_pos[], char end_pos[])
             // Queen, Rook, Bishop, and Knight
             if (piece_type>0 && piece_type<5) {
                 // And the bitwise complement of our start position to our bitboard to remove it from start position
-                bitboards[i] = bitboards[i] & ~start_pos_bb;
+                bitboards_arr[i] = bitboards_arr[i] & ~start_pos_bb;
                 // And the bitwise complement of our end position to each bitboard to remove any captured piece
                 for (int j = 0; j < 12; j++) {
-                    bitboards[j] = bitboards[j] & ~end_pos_bb;
+                    bitboards_arr[j] = bitboards_arr[j] & ~end_pos_bb;
                 }
                 // Or the end position to our bitboard to add it to the end position
-                bitboards[i] = bitboards[i] | end_pos_bb;
+                bitboards_arr[i] = bitboards_arr[i] | end_pos_bb;
                 // Update En Passant target
-                strcpy(fen.en_passant_target, "-");
+                strcpy((*fen_ptr).en_passant_target, "-");
                 // Update castling availability
                 if (piece_type == 2) {
                     if (start_pos_bb == 1ULL) {
-                        remove_chars(fen.castling_availability, 'K');
+                        remove_chars((*fen_ptr).castling_availability, 'K');
                     }
                     else if (start_pos_bb == 128ULL) {
-                        remove_chars(fen.castling_availability, 'Q');
+                        remove_chars((*fen_ptr).castling_availability, 'Q');
                     }
                     else if (start_pos_bb == 72057594037927936ULL) {
-                        remove_chars(fen.castling_availability, 'k');
+                        remove_chars((*fen_ptr).castling_availability, 'k');
                     }
                     else if (start_pos_bb == 9223372036854775808ULL) {
-                        remove_chars(fen.castling_availability, 'q');
+                        remove_chars((*fen_ptr).castling_availability, 'q');
                     }
                 }
             }
@@ -714,96 +713,101 @@ char *make_move(char start_pos[], char end_pos[])
                 // King side castling
                 if (start_pos_bb >> 2 == end_pos_bb) {
                     // Remove rook
-                    bitboards[i+2] = bitboards[i+2] & ~(end_pos_bb >> 1);
+                    bitboards_arr[i+2] = bitboards_arr[i+2] & ~(end_pos_bb >> 1);
                     // Add rook
-                    bitboards[i+2] = bitboards[i+2] | (end_pos_bb << 1);
+                    bitboards_arr[i+2] = bitboards_arr[i+2] | (end_pos_bb << 1);
                 }
                 // Queen side castling
                 else if (start_pos_bb << 2 == end_pos_bb) {
                     // Remove rook
-                    bitboards[i+2] = bitboards[i+2] & ~(end_pos_bb << 2);
+                    bitboards_arr[i+2] = bitboards_arr[i+2] & ~(end_pos_bb << 2);
                     // Add rook
-                    bitboards[i+2] = bitboards[i+2] | (end_pos_bb >> 1);
+                    bitboards_arr[i+2] = bitboards_arr[i+2] | (end_pos_bb >> 1);
                 }
                 // And the bitwise complement of our start position to our bitboard to remove it from start position
-                bitboards[i] = bitboards[i] & ~start_pos_bb;
+                bitboards_arr[i] = bitboards_arr[i] & ~start_pos_bb;
                 // And the bitwise complement of our end position to each bitboard to remove any captured piece
                 for (int j = 0; j < 12; j++) {
-                    bitboards[j] = bitboards[j] & ~end_pos_bb;
+                    bitboards_arr[j] = bitboards_arr[j] & ~end_pos_bb;
                 }
                 // Or the end position to our bitboard to add it to the end position
-                bitboards[i] = bitboards[i] | end_pos_bb;
+                bitboards_arr[i] = bitboards_arr[i] | end_pos_bb;
                 // Update castling availability
                 if (is_white) {
-                    remove_chars(fen.castling_availability, 'K');
-                    remove_chars(fen.castling_availability, 'Q');
+                    remove_chars((*fen_ptr).castling_availability, 'K');
+                    remove_chars((*fen_ptr).castling_availability, 'Q');
                 }
                 else {
-                    remove_chars(fen.castling_availability, 'k');
-                    remove_chars(fen.castling_availability, 'q');
+                    remove_chars((*fen_ptr).castling_availability, 'k');
+                    remove_chars((*fen_ptr).castling_availability, 'q');
                 }
                 // Update En Passant target
-                strcpy(fen.en_passant_target, "-");
+                strcpy((*fen_ptr).en_passant_target, "-");
             }
             // Pawn
             else if (piece_type == 5) {
                 // Non-capture
                 if (file(start_pos_bb) == file(end_pos_bb)) {
                     // And the bitwise complement of our start position to our bitboard to remove it from start position
-                    bitboards[i] = bitboards[i] & ~start_pos_bb;
+                    bitboards_arr[i] = bitboards_arr[i] & ~start_pos_bb;
                     // Or the end position to our bitboard to add it to the end position
-                    bitboards[i] = bitboards[i] | end_pos_bb;
+                    bitboards_arr[i] = bitboards_arr[i] | end_pos_bb;
                     // Pawn double move
                     // White
                     if ((start_pos_bb << 16) == end_pos_bb) {
                         // Update En Passant target
-                        strcpy(fen.en_passant_target, bitboard_to_an(start_pos_bb << 8));
+                        strcpy((*fen_ptr).en_passant_target, bitboard_to_an(start_pos_bb << 8));
                     } 
                     // Black
                     else if ((start_pos_bb >> 16) == end_pos_bb) {
                         // Update En Passant target
-                        strcpy(fen.en_passant_target, bitboard_to_an(start_pos_bb >> 8));
+                        strcpy((*fen_ptr).en_passant_target, bitboard_to_an(start_pos_bb >> 8));
                     }
                     else {
                         // Update En Passant target
-                        strcpy(fen.en_passant_target, "-");
+                        strcpy((*fen_ptr).en_passant_target, "-");
                     }
                 }
                 // En Passant
                 else if (strcmp(end_pos, fen.en_passant_target) == 0) {
                     if (is_white) {
                         // Remove captured pawn
-                        bitboards[11] = bitboards[11] & ~(end_pos_bb >> 8);
+                        bitboards_arr[11] = bitboards_arr[11] & ~(end_pos_bb >> 8);
                     }
                     else {
                         // Remove captured pawn
-                        bitboards[5] = bitboards[5] & ~(end_pos_bb << 8);
+                        bitboards_arr[5] = bitboards_arr[5] & ~(end_pos_bb << 8);
                     }
                     // And the bitwise complement of our start position to our bitboard to remove it from start position
-                    bitboards[i] = bitboards[i] & ~start_pos_bb;
+                    bitboards_arr[i] = bitboards_arr[i] & ~start_pos_bb;
                     // Or the end position to our bitboard to add it to the end position
-                    bitboards[i] = bitboards[i] | end_pos_bb;
+                    bitboards_arr[i] = bitboards_arr[i] | end_pos_bb;
                 }
                 // Regular capture
                 else {
                     // And the bitwise complement of our start position to our bitboard to remove it from start position
-                    bitboards[i] = bitboards[i] & ~start_pos_bb;
+                    bitboards_arr[i] = bitboards_arr[i] & ~start_pos_bb;
                     // And the bitwise complement of our end position to each bitboard to remove any captured piece
                     for (int j = 0; j < 12; j++) {
-                        bitboards[j] = bitboards[j] & ~end_pos_bb;
+                        bitboards_arr[j] = bitboards_arr[j] & ~end_pos_bb;
                     }
                     // Or the end position to our bitboard to add it to the end position
-                    bitboards[i] = bitboards[i] | end_pos_bb;
+                    bitboards_arr[i] = bitboards_arr[i] | end_pos_bb;
                 }
             }
         }
     }
-    update_piece_placement();
     // Update active color
     if (is_white) {
-        fen.active_color = 'b';
+        (*fen_ptr).active_color = 'b';
     } else {
-        fen.active_color = 'w';
+        (*fen_ptr).active_color = 'w';
     }
+}
+
+char *make_move(char start_pos[], char end_pos[]) 
+{
+    process_move(start_pos, end_pos, bitboards, &fen);
+    update_piece_placement();
     return stringify_fen();
 }
