@@ -119,7 +119,7 @@ U64 an_to_bitboard(char *an)
 
 // Convert from bitboard representation to algebraic notation and return it as a string
 char *bitboard_to_an(U64 bitboard) {
-    char an[2];
+    static char an[3];
     U64 single_pos = 1ULL;
     for (int i = 0; i < 64; i++) {
         if (bitboard & single_pos) {
@@ -127,6 +127,7 @@ char *bitboard_to_an(U64 bitboard) {
             an[0] = ('h' - (i % 8));
             // Determine Rank
             an[1] = ((i / 8) + '1');
+            an[2] = '\0';
             return an;
         }
         single_pos = single_pos << 1;
@@ -300,7 +301,7 @@ bool string_contains(char *string, char c)
 
 char *stringify_fen()
 {
-    char result[100];
+    static char result[100];
     sprintf(result, "%s %c %s %s %i %i", fen.piece_placement, fen.active_color, fen.castling_availability, fen.en_passant_target, fen.halfmove_clock, fen.fullmove_number);
     return result;
 }
