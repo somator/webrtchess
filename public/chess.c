@@ -44,9 +44,9 @@ enum Piece_Type {
 };
 
 typedef struct {
-    char *piece_placement;
+    char piece_placement[74];
     char active_color;
-    char *castling_availability;
+    char castling_availability[5];
     char en_passant_target[3];
     int halfmove_clock;
     int fullmove_number;
@@ -155,19 +155,43 @@ char *bitboard_to_an(U64 bitboard) {
     return "";
 }
 
+void process_move(char start_pos[], char end_pos[], U64 bitboards_arr[], Fen* fen_ptr);
+
 // Convert from bitboard representation to algebraic notation (multiple moves) and store in movesPtr
-void update_moves(U64 bitboard) {
+void update_moves(U64 bitboard, char *start_pos, bool is_white) {
     // allocate space for 42 bytes (2 chars for rank and file times 21 maximum potential moves per piece)
     movesPtr = calloc(42, sizeof(char));
     int movesPtr_index = 0;
     U64 single_pos = 1ULL;
+    U64 local_bitboards[12];
+    Fen local_fen;
+    char file;
+    char rank;
     for (int i = 0; i < 64; i++) {
         if (bitboard & single_pos) {
             // Determine File
-            movesPtr[movesPtr_index] = ('h' - (i % 8));
-            movesPtr_index++;
+            file = ('h' - (i % 8));
             // Determine Rank
-            movesPtr[movesPtr_index] = ((i / 8) + '1');
+            rank = ((i / 8) + '1');
+            char end_pos[] = {file, rank, '\0'};
+            // Copy bitboards and fen to local variables
+            memcpy(local_bitboards, bitboards, sizeof(bitboards));
+            *(local_fen.piece_placement) = *(fen.piece_placement);
+            local_fen.active_color = fen.active_color;
+            *(local_fen.castling_availability) = *(fen.castling_availability);
+            *(local_fen.en_passant_target) = *(fen.en_passant_target);
+            local_fen.halfmove_clock = fen.halfmove_clock;
+            local_fen.fullmove_number = fen.fullmove_number;
+            // Prevent self-check
+            process_move(start_pos, end_pos, local_bitboards, &local_fen);
+            
+            // TO DO
+
+            // Assign File
+            movesPtr[movesPtr_index] = file;
+            movesPtr_index++;
+            // Assign Rank
+            movesPtr[movesPtr_index] = rank;
             movesPtr_index++;
         }
         single_pos = single_pos << 1;
@@ -618,38 +642,37 @@ char *find_moves(char start_pos[])
             } else {
                 is_white = false;
             }
-
             // Determine Piece
             switch(i % 6) {
                 // King
                 case 0:
                     moves = king_pattern(start_pos_bb, is_white);
-                    update_moves(moves);
+                    update_moves(moves, start_pos, is_white);
                     break;
                 // Queen
                 case 1:
                     moves = queen_pattern(start_pos_bb, is_white);
-                    update_moves(moves);
+                    update_moves(moves, start_pos, is_white);
                     break;
                 // Rook
                 case 2:
                     moves = rook_pattern(start_pos_bb, is_white);
-                    update_moves(moves);
+                    update_moves(moves, start_pos, is_white);
                     break;
                 // Bishop
                 case 3:
                     moves = bishop_pattern(start_pos_bb, is_white);
-                    update_moves(moves);
+                    update_moves(moves, start_pos, is_white);
                     break;
                 // Knight
                 case 4:
                     moves = knight_pattern(start_pos_bb, is_white);
-                    update_moves(moves);
+                    update_moves(moves, start_pos, is_white);
                     break;
                 // Pawn
                 case 5:
                     moves = pawn_pattern(start_pos_bb, is_white);
-                    update_moves(moves);
+                    update_moves(moves, start_pos, is_white);
                     break;
                 // Default
                 default:
