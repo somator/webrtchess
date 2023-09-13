@@ -61,7 +61,7 @@ function isLightSquare(file, rank) {
 }
 
 // cwrapped functions
-const find_moves = Module.cwrap('find_moves', 'number', ['string']);
+const find_moves = Module.cwrap('find_moves', 'number', ['string', 'number']);
 const set_start_bitboards = Module.cwrap('set_start_bitboards', null);
 const make_move = Module.cwrap('make_move', 'string', ['string', 'string']);
 
@@ -200,7 +200,7 @@ class Game {
         }
         this.selectedSquare = square;
         square.className = 'square highlighted';
-        const movesPtr = find_moves(square.id);
+        const movesPtr = find_moves(square.id, 0);
         const moves = this.readMoves(movesPtr);
         for (let an of moves) {
             const moveSquare = document.getElementById(an);
@@ -242,7 +242,9 @@ class Game {
     }
 
     movePiece(startSquare, endSquare) {
+        console.log("start = ", startSquare.id, "end = ", endSquare.id);
         this.fen = make_move(startSquare.id, endSquare.id);
-        this.fillBoardFromFen()
+        this.fillBoardFromFen();
+        this.listenForMoves();
     }
 }

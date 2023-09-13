@@ -256,7 +256,7 @@ void update_piece_placement() {
 }
 
 // Return a bitboard containing all of one side's pieces
-U64 my_bitboard(bool is_white)
+U64 my_bitboard(bool is_white, U64* bitboards_ptr)
 {
     U64 my_bb = 0ULL;
     int i = 0;
@@ -266,33 +266,33 @@ U64 my_bitboard(bool is_white)
     }
     max_i = i + 6;
     for ( ; i < max_i; i++) {
-        my_bb = my_bb | bitboards[i];
+        my_bb = my_bb | bitboards_ptr[i];
     }
     return my_bb;
 }
 
 // Return a bitboard containing all of the opposition's pieces
-U64 opp_bitboard(bool is_white)
+U64 opp_bitboard(bool is_white, U64* bitboards_ptr)
 {
-    return my_bitboard(!is_white);
+    return my_bitboard(!is_white, bitboards_ptr);
 }
 
 // Return a bitboard containing all pieces
-U64 all_bitboard()
+U64 all_bitboard(U64* bitboards_ptr)
 {
     U64 all_bb = 0ULL;
     int i;
 
     for (i = 0; i < 12; i++) {
-        all_bb = all_bb | bitboards[i];
+        all_bb = all_bb | bitboards_ptr[i];
     }
     return all_bb;
 }
 
 // Return true if a square is unoccupied
-bool unoccupied_square(U64 square)
+bool unoccupied_square(U64 square, U64* bitboards_ptr)
 {
-    if ((all_bitboard() & square) == 0) {
+    if ((all_bitboard(bitboards_ptr) & square) == 0) {
         return true;
     } else {
         return false;
@@ -357,10 +357,10 @@ char *stringify_fen()
     return result;
 }
 
-U64 king_pattern(U64 start_pos, bool is_white)
+U64 king_pattern(U64 start_pos, bool is_white, U64* bitboards_ptr)
 {
     U64 moves = 0ULL;
-    U64 not_my_bb = ~my_bitboard(is_white);
+    U64 not_my_bb = ~my_bitboard(is_white, bitboards_ptr);
     U64 possible_move;
 
     possible_move = (start_pos << 8) & not_my_bb & ~RANK_1;
@@ -383,12 +383,12 @@ U64 king_pattern(U64 start_pos, bool is_white)
     // Castling
     if (is_white) {
         if (string_contains(fen.castling_availability, 'K')) {
-            if (unoccupied_square(2ULL) && unoccupied_square(4ULL)) {
+            if (unoccupied_square(2ULL, bitboards_ptr) && unoccupied_square(4ULL, bitboards_ptr)) {
                 moves = moves | 2ULL;
             }
         }
         if (string_contains(fen.castling_availability, 'Q')) {
-            if (unoccupied_square(16ULL) && unoccupied_square(32ULL) && unoccupied_square(64ULL)) {
+            if (unoccupied_square(16ULL, bitboards_ptr) && unoccupied_square(32ULL, bitboards_ptr) && unoccupied_square(64ULL, bitboards_ptr)) {
                 moves = moves | 32ULL;
             }
         }
@@ -396,12 +396,12 @@ U64 king_pattern(U64 start_pos, bool is_white)
     // Black
     else {
         if (string_contains(fen.castling_availability, 'k')) {
-            if (unoccupied_square(144115188075855872ULL) && unoccupied_square(288230376151711744ULL)) {
+            if (unoccupied_square(144115188075855872ULL, bitboards_ptr) && unoccupied_square(288230376151711744ULL, bitboards_ptr)) {
                 moves = moves | 144115188075855872ULL;
             }
         }
         if (string_contains(fen.castling_availability, 'q')) {
-            if (unoccupied_square(1152921504606846976ULL) && unoccupied_square(2305843009213693952ULL) && unoccupied_square(4611686018427387904ULL)) {
+            if (unoccupied_square(1152921504606846976ULL, bitboards_ptr) && unoccupied_square(2305843009213693952ULL, bitboards_ptr) && unoccupied_square(4611686018427387904ULL, bitboards_ptr)) {
                 moves = moves | 2305843009213693952ULL;
             }
         }
@@ -410,11 +410,11 @@ U64 king_pattern(U64 start_pos, bool is_white)
     return moves;
 }
 
-U64 queen_pattern(U64 start_pos, bool is_white)
+U64 queen_pattern(U64 start_pos, bool is_white, U64* bitboards_ptr)
 {
     U64 moves = 0ULL;
-    U64 not_my_bb = ~my_bitboard(is_white);
-    U64 opp_bb = opp_bitboard(is_white);
+    U64 not_my_bb = ~my_bitboard(is_white, bitboards_ptr);
+    U64 opp_bb = opp_bitboard(is_white, bitboards_ptr);
     U64 possible_move;
 
     possible_move = start_pos;
@@ -485,11 +485,11 @@ U64 queen_pattern(U64 start_pos, bool is_white)
     return moves;
 }
 
-U64 rook_pattern(U64 start_pos, bool is_white)
+U64 rook_pattern(U64 start_pos, bool is_white, U64* bitboards_ptr)
 {
     U64 moves = 0ULL;
-    U64 not_my_bb = ~my_bitboard(is_white);
-    U64 opp_bb = opp_bitboard(is_white);
+    U64 not_my_bb = ~my_bitboard(is_white, bitboards_ptr);
+    U64 opp_bb = opp_bitboard(is_white, bitboards_ptr);
     U64 possible_move;
 
     possible_move = start_pos;
@@ -528,11 +528,11 @@ U64 rook_pattern(U64 start_pos, bool is_white)
     return moves;
 }
 
-U64 bishop_pattern(U64 start_pos, bool is_white)
+U64 bishop_pattern(U64 start_pos, bool is_white, U64* bitboards_ptr)
 {
     U64 moves = 0ULL;
-    U64 not_my_bb = ~my_bitboard(is_white);
-    U64 opp_bb = opp_bitboard(is_white);
+    U64 not_my_bb = ~my_bitboard(is_white, bitboards_ptr);
+    U64 opp_bb = opp_bitboard(is_white, bitboards_ptr);
     U64 possible_move;
     
     possible_move = start_pos;
@@ -571,10 +571,10 @@ U64 bishop_pattern(U64 start_pos, bool is_white)
     return moves;
 }
 
-U64 knight_pattern(U64 start_pos, bool is_white)
+U64 knight_pattern(U64 start_pos, bool is_white, U64* bitboards_ptr)
 {
     U64 moves = 0ULL;
-    U64 not_my_bb = ~my_bitboard(is_white);
+    U64 not_my_bb = ~my_bitboard(is_white, bitboards_ptr);
 
     moves = moves | ((start_pos << 15) & not_my_bb & ~FILE_A);
     moves = moves | ((start_pos <<  6) & not_my_bb & ~FILE_A & ~FILE_B);
@@ -588,18 +588,18 @@ U64 knight_pattern(U64 start_pos, bool is_white)
     return moves;
 }
 
-U64 pawn_pattern(U64 start_pos, bool is_white)
+U64 pawn_pattern(U64 start_pos, bool is_white, U64* bitboards_ptr)
 {
     U64 moves = 0ULL;
-    U64 opp_bb = opp_bitboard(is_white);
+    U64 opp_bb = opp_bitboard(is_white, bitboards_ptr);
     U64 ep_target = an_to_bitboard(fen.en_passant_target);
     U64 forward_and_to_left;
     U64 forward_and_to_right;
 
     if (is_white) {
-        if (unoccupied_square(start_pos << 8)) {
+        if (unoccupied_square(start_pos << 8, bitboards_ptr)) {
             moves = moves | (start_pos << 8);
-            if (rank(start_pos) == 2 && unoccupied_square(start_pos << 16)) {
+            if (rank(start_pos) == 2 && unoccupied_square(start_pos << 16, bitboards_ptr)) {
                 moves = moves | (start_pos << 16);
             }
         }
@@ -613,9 +613,9 @@ U64 pawn_pattern(U64 start_pos, bool is_white)
         }
     }
     else {
-        if (unoccupied_square(start_pos >> 8)) {
+        if (unoccupied_square(start_pos >> 8, bitboards_ptr)) {
             moves = moves | (start_pos >> 8);
-            if (rank(start_pos) == 7 && unoccupied_square(start_pos >> 16)) {
+            if (rank(start_pos) == 7 && unoccupied_square(start_pos >> 16, bitboards_ptr)) {
                 moves = moves | (start_pos >> 16);
             }
         }
@@ -632,17 +632,21 @@ U64 pawn_pattern(U64 start_pos, bool is_white)
     return moves;
 }
 
-char *find_moves(char start_pos[]) 
+char *find_moves(char start_pos[], U64* bitboards_ptr) 
 {
     U64 moves;
     bool is_white;
+
+    if (!bitboards_ptr) {
+        bitboards_ptr = bitboards;
+    }
 
     // Deallocate movesPtr, will be allocated again inside update_moves function call
     free(movesPtr);
 
     U64 start_pos_bb = an_to_bitboard(start_pos);
     for (int i = 0; i < 12; i++) {
-        if (start_pos_bb & bitboards[i]) {
+        if (start_pos_bb & bitboards_ptr[i]) {
             // Determine Color
             if (i < 6) {
                 is_white = true;
@@ -653,32 +657,32 @@ char *find_moves(char start_pos[])
             switch(i % 6) {
                 // King
                 case 0:
-                    moves = king_pattern(start_pos_bb, is_white);
+                    moves = king_pattern(start_pos_bb, is_white, bitboards_ptr);
                     update_moves(moves, start_pos, is_white);
                     break;
                 // Queen
                 case 1:
-                    moves = queen_pattern(start_pos_bb, is_white);
+                    moves = queen_pattern(start_pos_bb, is_white, bitboards_ptr);
                     update_moves(moves, start_pos, is_white);
                     break;
                 // Rook
                 case 2:
-                    moves = rook_pattern(start_pos_bb, is_white);
+                    moves = rook_pattern(start_pos_bb, is_white, bitboards_ptr);
                     update_moves(moves, start_pos, is_white);
                     break;
                 // Bishop
                 case 3:
-                    moves = bishop_pattern(start_pos_bb, is_white);
+                    moves = bishop_pattern(start_pos_bb, is_white, bitboards_ptr);
                     update_moves(moves, start_pos, is_white);
                     break;
                 // Knight
                 case 4:
-                    moves = knight_pattern(start_pos_bb, is_white);
+                    moves = knight_pattern(start_pos_bb, is_white, bitboards_ptr);
                     update_moves(moves, start_pos, is_white);
                     break;
                 // Pawn
                 case 5:
-                    moves = pawn_pattern(start_pos_bb, is_white);
+                    moves = pawn_pattern(start_pos_bb, is_white, bitboards_ptr);
                     update_moves(moves, start_pos, is_white);
                     break;
                 // Default
