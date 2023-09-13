@@ -155,6 +155,13 @@ char *bitboard_to_an(U64 bitboard) {
     return "";
 }
 
+// return true if I'm checked
+bool am_i_checked(U64 *bitboards, bool is_white) {
+    U64 single_pos = 1ULL;
+    // To Do
+    return false;
+}
+
 void process_move(char start_pos[], char end_pos[], U64 bitboards_arr[], Fen* fen_ptr);
 
 // Convert from bitboard representation to algebraic notation (multiple moves) and store in movesPtr
