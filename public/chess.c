@@ -65,6 +65,15 @@ char *fen_lookup = "KQRBNPkqrbnp";
 
 U64 bitboards[12];
 
+// Calculated moves at depth 0 will be at this char array representating them in algebraic notation
+char primary_moves_arr[43];
+// Calculated moves at depth 1 will be at this char array representating them in algebraic notation
+char secondary_moves_arr[43];
+
+// Function prototypes to avoid implicit declarations
+char *find_moves(char start_pos[], U64* bitboards_ptr, bool check_for_checks);
+void process_move(char start_pos[], char end_pos[], U64 bitboards_arr[], Fen* fen_ptr);
+
 // Print a single bitboard
 void print_bitboard(U64 bitboard) {
     U64 bit = 1ULL << 63;
@@ -119,9 +128,6 @@ void set_start_bitboards()
     bitboards[BLACK_PAWN] = 71776119061217280ULL;
 }
 
-// Calculated moves will be stored in this array of chars representating algebraic notation
-char *movesPtr;
-
 // Convert from algebraic notation to bitboard representation
 U64 an_to_bitboard(char *an)
 {
@@ -155,20 +161,80 @@ char *bitboard_to_an(U64 bitboard) {
     return "";
 }
 
+// Return a bitboard containing all of one side's pieces
+U64 my_bitboard(bool is_white, U64* bitboards_ptr)
+{
+    U64 my_bb = 0ULL;
+    int i = 0;
+    int max_i;
+    if (!is_white) {
+        i = i + 6;
+    }
+    max_i = i + 6;
+    for ( ; i < max_i; i++) {
+        my_bb = my_bb | bitboards_ptr[i];
+    }
+    return my_bb;
+}
+
+// Return a bitboard containing all of the opposition's pieces
+U64 opp_bitboard(bool is_white, U64* bitboards_ptr)
+{
+    return my_bitboard(!is_white, bitboards_ptr);
+}
+
+// Return a bitboard containing all pieces
+U64 all_bitboard(U64* bitboards_ptr)
+{
+    U64 all_bb = 0ULL;
+    int i;
+
+    for (i = 0; i < 12; i++) {
+        all_bb = all_bb | bitboards_ptr[i];
+    }
+    return all_bb;
+}
+
 // return true if I'm checked
-bool am_i_checked(U64 *bitboards, bool is_white) {
+bool am_i_checked(U64 *bitboards_ptr, bool is_white) {
     U64 single_pos = 1ULL;
-    // To Do
+    U64 opp_bb = opp_bitboard(is_white, bitboards_ptr);
+    U64 king_bb;
+    if (is_white) {
+        king_bb = bitboards_ptr[WHITE_KING];
+    } else {
+        king_bb = bitboards_ptr[BLACK_KING];
+    }
+    // king algebraic notation string
+    char king_an[3];
+    strcpy(king_an, bitboard_to_an(king_bb));
+    for (int i=0; i< 64; i++) {
+        if (single_pos & opp_bb) {
+            // moves algebraic notation string
+            char *moves_an = find_moves(bitboard_to_an(single_pos), bitboards_ptr, false);
+            // check if moves algebraic notation string contains king algebraic notation string
+            if (strstr(moves_an, king_an) != NULL) {
+                return true;
+            }
+        }
+        single_pos = single_pos << 1;
+    }
     return false;
 }
 
-void process_move(char start_pos[], char end_pos[], U64 bitboards_arr[], Fen* fen_ptr);
-
-// Convert from bitboard representation to algebraic notation (multiple moves) and store in movesPtr
-void update_moves(U64 bitboard, char *start_pos, bool is_white) {
-    // allocate space for 42 bytes (2 chars for rank and file times 21 maximum potential moves per piece)
-    movesPtr = calloc(42, sizeof(char));
-    int movesPtr_index = 0;
+/* Convert multiple moves from bitboard representation to algebraic notation, prevent self checks at 
+depth zero, and store in moves_ptr */
+void update_moves(U64 bitboard, char *start_pos, bool is_white, bool check_for_checks) {
+    char *moves_ptr;
+    // if we are checking for self checks then we are at depth zero and will use the primary moves array
+    if (check_for_checks) {
+        moves_ptr = primary_moves_arr;
+    /* otherwise we are at depth one and will use the secondary moves array so as not to overwrite the 
+    primary moves array */
+    } else {
+        moves_ptr = secondary_moves_arr;
+    }
+    int moves_ptr_index = 0;
     U64 single_pos = 1ULL;
     U64 local_bitboards[12];
     Fen local_fen;
@@ -189,20 +255,31 @@ void update_moves(U64 bitboard, char *start_pos, bool is_white) {
             *(local_fen.en_passant_target) = *(fen.en_passant_target);
             local_fen.halfmove_clock = fen.halfmove_clock;
             local_fen.fullmove_number = fen.fullmove_number;
-            // Prevent self-check
+            // Make the move on our local copy of the bitboards
             process_move(start_pos, end_pos, local_bitboards, &local_fen);
-            
-            // TO DO
-
-            // Assign File
-            movesPtr[movesPtr_index] = file;
-            movesPtr_index++;
-            // Assign Rank
-            movesPtr[movesPtr_index] = rank;
-            movesPtr_index++;
+            // Prevent self-check
+            if (check_for_checks) {
+                // Detect if I'm checked on the local bitboards instance
+                if (!am_i_checked(local_bitboards, is_white)) {
+                    // Assign File
+                    moves_ptr[moves_ptr_index] = file;
+                    moves_ptr_index++;
+                    // Assign Rank
+                    moves_ptr[moves_ptr_index] = rank;
+                    moves_ptr_index++;
+                }
+            } else {
+                // Assign File
+                moves_ptr[moves_ptr_index] = file;
+                moves_ptr_index++;
+                // Assign Rank
+                moves_ptr[moves_ptr_index] = rank;
+                moves_ptr_index++;
+            }
         }
         single_pos = single_pos << 1;
     }
+    moves_ptr[moves_ptr_index] = '\0';
 }
 
 // Read bitboards, determine piece placement, and store it in fen.pieceplacement
@@ -253,40 +330,6 @@ void update_piece_placement() {
     result[result_index-1] = 0;
     // Copy result to fen.piece_placement
     strcpy(fen.piece_placement, result);
-}
-
-// Return a bitboard containing all of one side's pieces
-U64 my_bitboard(bool is_white, U64* bitboards_ptr)
-{
-    U64 my_bb = 0ULL;
-    int i = 0;
-    int max_i;
-    if (!is_white) {
-        i = i + 6;
-    }
-    max_i = i + 6;
-    for ( ; i < max_i; i++) {
-        my_bb = my_bb | bitboards_ptr[i];
-    }
-    return my_bb;
-}
-
-// Return a bitboard containing all of the opposition's pieces
-U64 opp_bitboard(bool is_white, U64* bitboards_ptr)
-{
-    return my_bitboard(!is_white, bitboards_ptr);
-}
-
-// Return a bitboard containing all pieces
-U64 all_bitboard(U64* bitboards_ptr)
-{
-    U64 all_bb = 0ULL;
-    int i;
-
-    for (i = 0; i < 12; i++) {
-        all_bb = all_bb | bitboards_ptr[i];
-    }
-    return all_bb;
 }
 
 // Return true if a square is unoccupied
@@ -632,17 +675,28 @@ U64 pawn_pattern(U64 start_pos, bool is_white, U64* bitboards_ptr)
     return moves;
 }
 
-char *find_moves(char start_pos[], U64* bitboards_ptr) 
+/* Receive the start position in algebraic notation, a pointer to the bitboards representing our 
+piece placement, a boolean representing whether to prevent self-checks, and return a pointer to all
+legal moves in algebraic notation. */
+char *find_moves(char start_pos[], U64* bitboards_ptr, bool check_for_checks) 
 {
     U64 moves;
     bool is_white;
+    char *moves_ptr;
 
     if (!bitboards_ptr) {
         bitboards_ptr = bitboards;
     }
 
-    // Deallocate movesPtr, will be allocated again inside update_moves function call
-    free(movesPtr);
+    /* If we are checking for self checks, then we are at depth zero and will use 
+    the primary moves pointer */
+    if (check_for_checks) {
+        moves_ptr = primary_moves_arr;
+    /* Otherwise we are at depth one and need to use the secondary moves pointer so
+    as not to overwrite the primary */
+    } else {
+        moves_ptr = secondary_moves_arr;
+    }
 
     U64 start_pos_bb = an_to_bitboard(start_pos);
     for (int i = 0; i < 12; i++) {
@@ -658,44 +712,45 @@ char *find_moves(char start_pos[], U64* bitboards_ptr)
                 // King
                 case 0:
                     moves = king_pattern(start_pos_bb, is_white, bitboards_ptr);
-                    update_moves(moves, start_pos, is_white);
+                    update_moves(moves, start_pos, is_white, check_for_checks);
                     break;
                 // Queen
                 case 1:
                     moves = queen_pattern(start_pos_bb, is_white, bitboards_ptr);
-                    update_moves(moves, start_pos, is_white);
+                    update_moves(moves, start_pos, is_white, check_for_checks);
                     break;
                 // Rook
                 case 2:
                     moves = rook_pattern(start_pos_bb, is_white, bitboards_ptr);
-                    update_moves(moves, start_pos, is_white);
+                    update_moves(moves, start_pos, is_white, check_for_checks);
                     break;
                 // Bishop
                 case 3:
                     moves = bishop_pattern(start_pos_bb, is_white, bitboards_ptr);
-                    update_moves(moves, start_pos, is_white);
+                    update_moves(moves, start_pos, is_white, check_for_checks);
                     break;
                 // Knight
                 case 4:
                     moves = knight_pattern(start_pos_bb, is_white, bitboards_ptr);
-                    update_moves(moves, start_pos, is_white);
+                    update_moves(moves, start_pos, is_white, check_for_checks);
                     break;
                 // Pawn
                 case 5:
                     moves = pawn_pattern(start_pos_bb, is_white, bitboards_ptr);
-                    update_moves(moves, start_pos, is_white);
+                    update_moves(moves, start_pos, is_white, check_for_checks);
                     break;
                 // Default
                 default:
-                    // Allocate memory to movesPtr in edge case where update_moves isn't called
-                    movesPtr = calloc(42, sizeof(char));
+                    // Allocate memory to moves_ptr in edge case where update_moves isn't called
+                    moves_ptr = calloc(42, sizeof(char));
             }
         }
     }
 
-    return movesPtr;
+    return moves_ptr;
 }
 
+// Take start and end position of move and use it to update bitboards_arr, all of fen_ptr except piece_placement
 void process_move(char start_pos[], char end_pos[], U64 bitboards_arr[], Fen* fen_ptr) {
     bool is_white;
     int piece_type;
