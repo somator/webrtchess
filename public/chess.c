@@ -7,7 +7,7 @@
 #include "emscripten.h"
 
 /* 8x8 bitboards are stored as 64 bit unsigned integers.
-files correspond to columns, and ranks correspond to rows */
+files correspond to columns, and ranks correspond to rows. */
 #define FILE_A 0x8080808080808080ULL
 #define FILE_B 0x4040404040404040ULL
 #define FILE_C 0x2020202020202020ULL
@@ -43,6 +43,7 @@ enum Piece_Type {
     BLACK_PAWN = 11,
 };
 
+// A struct representing the Forsyth–Edwards Notation (FEN) of the board state
 typedef struct {
     char piece_placement[74];
     char active_color;
@@ -52,6 +53,7 @@ typedef struct {
     int fullmove_number;
 } Fen;
 
+// Set default starting fen 
 Fen fen = {
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
     'w',
@@ -61,13 +63,17 @@ Fen fen = {
     1,
 };
 
-char *fen_lookup = "KQRBNPkqrbnp";
+/* Pieces in Forsyth-Edwards notation are represented by the characters in this array,
+which we can index with the Piece_Type enum */
+char fen_lookup[13] = "KQRBNPkqrbnp";
 
+// A global array of 12 bitboards representing piece placement
 U64 bitboards[12];
 
-// Calculated moves at depth 0 will be at this char array representating them in algebraic notation
+// Calculated moves at depth 0 will be stored in this char array representating them in algebraic notation
 char primary_moves_arr[43];
-// Calculated moves at depth 1 will be at this char array representating them in algebraic notation
+
+// Calculated moves at depth 1 will be stored in this char array representating them in algebraic notation
 char secondary_moves_arr[43];
 
 // Function prototypes to avoid implicit declarations
@@ -111,23 +117,6 @@ void print_board() {
     printf("\n");
 }
 
-// Standard start position
-void set_start_bitboards()
-{
-    bitboards[WHITE_KING] = 8ULL;
-    bitboards[WHITE_QUEEN] = 16ULL;
-    bitboards[WHITE_ROOK] = 129ULL;
-    bitboards[WHITE_BISHOP] = 36ULL;
-    bitboards[WHITE_KNIGHT] = 66ULL;
-    bitboards[WHITE_PAWN] = 65280ULL;
-    bitboards[BLACK_KING] = 576460752303423488ULL;
-    bitboards[BLACK_QUEEN] = 1152921504606846976ULL;
-    bitboards[BLACK_ROOK] = 9295429630892703744ULL;
-    bitboards[BLACK_BISHOP] = 2594073385365405696ULL;
-    bitboards[BLACK_KNIGHT] = 4755801206503243776ULL;
-    bitboards[BLACK_PAWN] = 71776119061217280ULL;
-}
-
 // Convert from algebraic notation to bitboard representation
 U64 an_to_bitboard(char *an)
 {
@@ -143,7 +132,7 @@ U64 an_to_bitboard(char *an)
     return bitboard;
 }
 
-// Convert from bitboard representation to algebraic notation and return it as a string
+// Convert from bitboard representation to algebraic notation and return it as a pointer
 char *bitboard_to_an(U64 bitboard) {
     static char an[3];
     U64 single_pos = 1ULL;
@@ -193,6 +182,380 @@ U64 all_bitboard(U64* bitboards_ptr)
         all_bb = all_bb | bitboards_ptr[i];
     }
     return all_bb;
+}
+
+// Return true if a square is unoccupied
+bool unoccupied_square(U64 square, U64* bitboards_ptr)
+{
+    if ((all_bitboard(bitboards_ptr) & square) == 0) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+// Return the rank of a square
+int rank(U64 square)
+{
+    U64 bitshift_me = 1ULL;
+    for (int i=0; i<64; i++) {
+        if (square & bitshift_me) {
+            return ((i / 8) + 1);
+        }
+        bitshift_me = bitshift_me << 1;
+    }
+    return 0;
+}
+
+// Return the file of a square
+char file(U64 square)
+{
+    U64 bitshift_me = 1ULL;
+    for (int i=0; i<64; i++) {
+        if (square & bitshift_me) {
+            return ('h' - (i % 8));
+        }
+        bitshift_me = bitshift_me << 1;
+    }
+    return '0';
+}
+
+// Remove all chars of a certain type from a string
+void remove_chars(char *s, char c)
+{
+    int writer = 0, reader = 0;
+    while (s[reader]) {
+        if (s[reader] != c) {   
+            s[writer++] = s[reader];
+        }
+        reader++;       
+    }
+    s[writer]=0;
+}
+
+// Return true if string contains a certain character
+bool string_contains(char *string, char c)
+{
+    if (*string == c) {
+        return 1;
+    } else if (*string == '\0') {
+        return 0;
+    } else {
+        return string_contains(string + 1, c);
+    }
+}
+
+// Return a pointer to a string representing the entirety of the fen struct
+char *stringify_fen()
+{
+    static char result[100];
+    sprintf(result, "%s %c %s %s %i %i", fen.piece_placement, fen.active_color, fen.castling_availability, fen.en_passant_target, fen.halfmove_clock, fen.fullmove_number);
+    return result;
+}
+
+/* Standard start position. These "magic numbers" are all precalculated bitboards
+representing where you would expect to find each piece at the beginning of the game. */
+void set_start_bitboards()
+{
+    bitboards[WHITE_KING] = 8ULL;
+    bitboards[WHITE_QUEEN] = 16ULL;
+    bitboards[WHITE_ROOK] = 129ULL;
+    bitboards[WHITE_BISHOP] = 36ULL;
+    bitboards[WHITE_KNIGHT] = 66ULL;
+    bitboards[WHITE_PAWN] = 65280ULL;
+    bitboards[BLACK_KING] = 576460752303423488ULL;
+    bitboards[BLACK_QUEEN] = 1152921504606846976ULL;
+    bitboards[BLACK_ROOK] = 9295429630892703744ULL;
+    bitboards[BLACK_BISHOP] = 2594073385365405696ULL;
+    bitboards[BLACK_KNIGHT] = 4755801206503243776ULL;
+    bitboards[BLACK_PAWN] = 71776119061217280ULL;
+}
+
+/* Given a start position, a color, and the current piece placement, return 
+a bitboard representing all pseudo-legal king moves. */
+U64 king_pattern(U64 start_pos, bool is_white, U64* bitboards_ptr)
+{
+    U64 moves = 0ULL;
+    U64 not_my_bb = ~my_bitboard(is_white, bitboards_ptr);
+    U64 possible_move;
+
+    possible_move = (start_pos << 8) & not_my_bb & ~RANK_1;
+    moves = moves | possible_move;
+    possible_move = (start_pos >> 1) & not_my_bb & ~FILE_A;
+    moves = moves | possible_move;
+    possible_move = (start_pos >> 8) & not_my_bb & ~RANK_8;
+    moves = moves | possible_move;
+    possible_move = (start_pos << 1) & not_my_bb & ~FILE_H;
+    moves = moves | possible_move;
+    possible_move = (start_pos << 7) & not_my_bb & ~FILE_A & ~RANK_1;
+    moves = moves | possible_move;
+    possible_move = (start_pos >> 9) & not_my_bb & ~FILE_A & ~RANK_8;
+    moves = moves | possible_move;
+    possible_move = (start_pos >> 7) & not_my_bb & ~FILE_H & ~RANK_8;
+    moves = moves | possible_move;
+    possible_move = (start_pos << 9) & not_my_bb & ~FILE_H & ~RANK_1;
+    moves = moves | possible_move;
+
+    // Castling
+    if (is_white) {
+        if (string_contains(fen.castling_availability, 'K')) {
+            if (unoccupied_square(2ULL, bitboards_ptr) && unoccupied_square(4ULL, bitboards_ptr)) {
+                moves = moves | 2ULL;
+            }
+        }
+        if (string_contains(fen.castling_availability, 'Q')) {
+            if (unoccupied_square(16ULL, bitboards_ptr) && unoccupied_square(32ULL, bitboards_ptr) && unoccupied_square(64ULL, bitboards_ptr)) {
+                moves = moves | 32ULL;
+            }
+        }
+    }
+    // Black
+    else {
+        if (string_contains(fen.castling_availability, 'k')) {
+            if (unoccupied_square(144115188075855872ULL, bitboards_ptr) && unoccupied_square(288230376151711744ULL, bitboards_ptr)) {
+                moves = moves | 144115188075855872ULL;
+            }
+        }
+        if (string_contains(fen.castling_availability, 'q')) {
+            if (unoccupied_square(1152921504606846976ULL, bitboards_ptr) && unoccupied_square(2305843009213693952ULL, bitboards_ptr) && unoccupied_square(4611686018427387904ULL, bitboards_ptr)) {
+                moves = moves | 2305843009213693952ULL;
+            }
+        }
+    }
+
+    return moves;
+}
+
+/* Given a start position, a color, and the current piece placement, return 
+a bitboard representing all pseudo-legal queen moves. */
+U64 queen_pattern(U64 start_pos, bool is_white, U64* bitboards_ptr)
+{
+    U64 moves = 0ULL;
+    U64 not_my_bb = ~my_bitboard(is_white, bitboards_ptr);
+    U64 opp_bb = opp_bitboard(is_white, bitboards_ptr);
+    U64 possible_move;
+
+    possible_move = start_pos;
+    while (possible_move) {
+        possible_move = (possible_move << 8) & not_my_bb & ~RANK_1;
+        moves = moves | possible_move;
+        if (possible_move & opp_bb) {
+            break;
+        }
+    }
+    possible_move = start_pos;
+    while (possible_move) {
+        possible_move = (possible_move << 7) & not_my_bb & ~FILE_A & ~RANK_1;
+        moves = moves | possible_move;
+        if (possible_move & opp_bb) {
+            break;
+        }
+    }
+    possible_move = start_pos;
+    while (possible_move) {
+        possible_move = (possible_move >> 1) & not_my_bb & ~FILE_A;
+        moves = moves | possible_move;
+        if (possible_move & opp_bb) {
+            break;
+        }
+    }
+    possible_move = start_pos;
+    while (possible_move) {
+        possible_move = (possible_move >> 9) & not_my_bb & ~FILE_A & ~RANK_8;
+        moves = moves | possible_move;
+        if (possible_move & opp_bb) {
+            break;
+        }
+    }
+    possible_move = start_pos;
+    while (possible_move) {
+        possible_move = (possible_move >> 8) & not_my_bb & ~RANK_8;
+        moves = moves | possible_move;
+        if (possible_move & opp_bb) {
+            break;
+        }
+    }
+    possible_move = start_pos;
+    while (possible_move) {
+        possible_move = (possible_move >> 7) & not_my_bb & ~FILE_H & ~RANK_8;
+        moves = moves | possible_move;
+        if (possible_move & opp_bb) {
+            break;
+        }
+    }
+    possible_move = start_pos;
+    while (possible_move) {
+        possible_move = (possible_move << 1) & not_my_bb & ~FILE_H;
+        moves = moves | possible_move;
+        if (possible_move & opp_bb) {
+            break;
+        }
+    }
+    possible_move = start_pos;
+    while (possible_move) {
+        possible_move = (possible_move << 9) & not_my_bb & ~FILE_H & ~RANK_1;
+        moves = moves | possible_move;
+        if (possible_move & opp_bb) {
+            break;
+        }
+    }
+
+    return moves;
+}
+
+/* Given a start position, a color, and the current piece placement, return 
+a bitboard representing all pseudo-legal rook moves. */
+U64 rook_pattern(U64 start_pos, bool is_white, U64* bitboards_ptr)
+{
+    U64 moves = 0ULL;
+    U64 not_my_bb = ~my_bitboard(is_white, bitboards_ptr);
+    U64 opp_bb = opp_bitboard(is_white, bitboards_ptr);
+    U64 possible_move;
+
+    possible_move = start_pos;
+    while (possible_move) {
+        possible_move = (possible_move << 8) & not_my_bb & ~RANK_1;
+        moves = moves | possible_move;
+        if (possible_move & opp_bb) {
+            break;
+        }
+    }
+    possible_move = start_pos;
+    while (possible_move) {
+        possible_move = (possible_move >> 1) & not_my_bb & ~FILE_A;
+        moves = moves | possible_move;
+        if (possible_move & opp_bb) {
+            break;
+        }
+    }
+    possible_move = start_pos;
+    while (possible_move) {
+        possible_move = (possible_move >> 8) & not_my_bb & ~RANK_8;
+        moves = moves | possible_move;
+        if (possible_move & opp_bb) {
+            break;
+        }
+    }
+    possible_move = start_pos;
+    while (possible_move) {
+        possible_move = (possible_move << 1) & not_my_bb & ~FILE_H;
+        moves = moves | possible_move;
+        if (possible_move & opp_bb) {
+            break;
+        }
+    }
+
+    return moves;
+}
+
+/* Given a start position, a color, and the current piece placement, return 
+a bitboard representing all pseudo-legal bishop moves. */
+U64 bishop_pattern(U64 start_pos, bool is_white, U64* bitboards_ptr)
+{
+    U64 moves = 0ULL;
+    U64 not_my_bb = ~my_bitboard(is_white, bitboards_ptr);
+    U64 opp_bb = opp_bitboard(is_white, bitboards_ptr);
+    U64 possible_move;
+    
+    possible_move = start_pos;
+    while (possible_move) {
+        possible_move = (possible_move << 7) & not_my_bb & ~FILE_A & ~RANK_1;
+        moves = moves | possible_move;
+        if (possible_move & opp_bb) {
+            break;
+        }
+    }
+    possible_move = start_pos;
+    while (possible_move) {
+        possible_move = (possible_move >> 9) & not_my_bb & ~FILE_A & ~RANK_8;
+        moves = moves | possible_move;
+        if (possible_move & opp_bb) {
+            break;
+        }
+    }
+    possible_move = start_pos;
+    while (possible_move) {
+        possible_move = (possible_move >> 7) & not_my_bb & ~FILE_H & ~RANK_8;
+        moves = moves | possible_move;
+        if (possible_move & opp_bb) {
+            break;
+        }
+    }
+    possible_move = start_pos;
+    while (possible_move) {
+        possible_move = (possible_move << 9) & not_my_bb & ~FILE_H & ~RANK_1;
+        moves = moves | possible_move;
+        if (possible_move & opp_bb) {
+            break;
+        }
+    }
+
+    return moves;
+}
+
+/* Given a start position, a color, and the current piece placement, return 
+a bitboard representing all pseudo-legal knight moves. */
+U64 knight_pattern(U64 start_pos, bool is_white, U64* bitboards_ptr)
+{
+    U64 moves = 0ULL;
+    U64 not_my_bb = ~my_bitboard(is_white, bitboards_ptr);
+
+    moves = moves | ((start_pos << 15) & not_my_bb & ~FILE_A);
+    moves = moves | ((start_pos <<  6) & not_my_bb & ~FILE_A & ~FILE_B);
+    moves = moves | ((start_pos >> 10) & not_my_bb & ~FILE_A & ~FILE_B);
+    moves = moves | ((start_pos >> 17) & not_my_bb & ~FILE_A);
+    moves = moves | ((start_pos >> 15) & not_my_bb & ~FILE_H);
+    moves = moves | ((start_pos >>  6) & not_my_bb & ~FILE_H & ~FILE_G);
+    moves = moves | ((start_pos << 10) & not_my_bb & ~FILE_H & ~FILE_G);
+    moves = moves | ((start_pos << 17) & not_my_bb & ~FILE_H);
+
+    return moves;
+}
+
+/* Given a start position, a color, and the current piece placement, return 
+a bitboard representing all pseudo-legal king moves. */
+U64 pawn_pattern(U64 start_pos, bool is_white, U64* bitboards_ptr)
+{
+    U64 moves = 0ULL;
+    U64 opp_bb = opp_bitboard(is_white, bitboards_ptr);
+    U64 ep_target = an_to_bitboard(fen.en_passant_target);
+    U64 forward_and_to_left;
+    U64 forward_and_to_right;
+
+    if (is_white) {
+        if (unoccupied_square(start_pos << 8, bitboards_ptr)) {
+            moves = moves | (start_pos << 8);
+            if (rank(start_pos) == 2 && unoccupied_square(start_pos << 16, bitboards_ptr)) {
+                moves = moves | (start_pos << 16);
+            }
+        }
+        forward_and_to_left = start_pos << 9;
+        forward_and_to_right = start_pos << 7;
+        if ((opp_bb | ep_target) & (forward_and_to_left & ~FILE_H)) {
+            moves = moves | forward_and_to_left;
+        }
+        if ((opp_bb | ep_target) & (forward_and_to_right & ~FILE_A)) {
+            moves = moves | forward_and_to_right;
+        }
+    }
+    else {
+        if (unoccupied_square(start_pos >> 8, bitboards_ptr)) {
+            moves = moves | (start_pos >> 8);
+            if (rank(start_pos) == 7 && unoccupied_square(start_pos >> 16, bitboards_ptr)) {
+                moves = moves | (start_pos >> 16);
+            }
+        }
+        forward_and_to_left = start_pos >> 9;
+        forward_and_to_right = start_pos >> 7;
+        if ((opp_bb | ep_target) & (forward_and_to_left & ~FILE_A)) {
+            moves = moves | forward_and_to_left;
+        }
+        if ((opp_bb | ep_target) & (forward_and_to_right & ~FILE_H)) {
+            moves = moves | forward_and_to_right;
+        }
+    }
+
+    return moves;
 }
 
 // return true if I'm checked
@@ -279,6 +642,7 @@ void update_moves(U64 bitboard, char *start_pos, bool is_white, bool check_for_c
         }
         single_pos = single_pos << 1;
     }
+    // Null terminate the end of the array
     moves_ptr[moves_ptr_index] = '\0';
 }
 
@@ -330,349 +694,6 @@ void update_piece_placement() {
     result[result_index-1] = 0;
     // Copy result to fen.piece_placement
     strcpy(fen.piece_placement, result);
-}
-
-// Return true if a square is unoccupied
-bool unoccupied_square(U64 square, U64* bitboards_ptr)
-{
-    if ((all_bitboard(bitboards_ptr) & square) == 0) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-// Return the rank of a square
-int rank(U64 square)
-{
-    U64 bitshift_me = 1ULL;
-    for (int i=0; i<64; i++) {
-        if (square & bitshift_me) {
-            return ((i / 8) + 1);
-        }
-        bitshift_me = bitshift_me << 1;
-    }
-    return 0;
-}
-
-// Return the file of a square
-char file(U64 square)
-{
-    U64 bitshift_me = 1ULL;
-    for (int i=0; i<64; i++) {
-        if (square & bitshift_me) {
-            return ('h' - (i % 8));
-        }
-        bitshift_me = bitshift_me << 1;
-    }
-    return '0';
-}
-
-// Remove all chars of a certain type from a string
-void remove_chars(char *s, char c)
-{
-    int writer = 0, reader = 0;
-    while (s[reader]) {
-        if (s[reader] != c) {   
-            s[writer++] = s[reader];
-        }
-        reader++;       
-    }
-    s[writer]=0;
-}
-
-// Return true if string contains a certain character
-bool string_contains(char *string, char c)
-{
-    if (*string == c) {
-        return 1;
-    } else if (*string == '\0') {
-        return 0;
-    } else {
-        return string_contains(string + 1, c);
-    }
-}
-
-char *stringify_fen()
-{
-    static char result[100];
-    sprintf(result, "%s %c %s %s %i %i", fen.piece_placement, fen.active_color, fen.castling_availability, fen.en_passant_target, fen.halfmove_clock, fen.fullmove_number);
-    return result;
-}
-
-U64 king_pattern(U64 start_pos, bool is_white, U64* bitboards_ptr)
-{
-    U64 moves = 0ULL;
-    U64 not_my_bb = ~my_bitboard(is_white, bitboards_ptr);
-    U64 possible_move;
-
-    possible_move = (start_pos << 8) & not_my_bb & ~RANK_1;
-    moves = moves | possible_move;
-    possible_move = (start_pos >> 1) & not_my_bb & ~FILE_A;
-    moves = moves | possible_move;
-    possible_move = (start_pos >> 8) & not_my_bb & ~RANK_8;
-    moves = moves | possible_move;
-    possible_move = (start_pos << 1) & not_my_bb & ~FILE_H;
-    moves = moves | possible_move;
-    possible_move = (start_pos << 7) & not_my_bb & ~FILE_A & ~RANK_1;
-    moves = moves | possible_move;
-    possible_move = (start_pos >> 9) & not_my_bb & ~FILE_A & ~RANK_8;
-    moves = moves | possible_move;
-    possible_move = (start_pos >> 7) & not_my_bb & ~FILE_H & ~RANK_8;
-    moves = moves | possible_move;
-    possible_move = (start_pos << 9) & not_my_bb & ~FILE_H & ~RANK_1;
-    moves = moves | possible_move;
-
-    // Castling
-    if (is_white) {
-        if (string_contains(fen.castling_availability, 'K')) {
-            if (unoccupied_square(2ULL, bitboards_ptr) && unoccupied_square(4ULL, bitboards_ptr)) {
-                moves = moves | 2ULL;
-            }
-        }
-        if (string_contains(fen.castling_availability, 'Q')) {
-            if (unoccupied_square(16ULL, bitboards_ptr) && unoccupied_square(32ULL, bitboards_ptr) && unoccupied_square(64ULL, bitboards_ptr)) {
-                moves = moves | 32ULL;
-            }
-        }
-    }
-    // Black
-    else {
-        if (string_contains(fen.castling_availability, 'k')) {
-            if (unoccupied_square(144115188075855872ULL, bitboards_ptr) && unoccupied_square(288230376151711744ULL, bitboards_ptr)) {
-                moves = moves | 144115188075855872ULL;
-            }
-        }
-        if (string_contains(fen.castling_availability, 'q')) {
-            if (unoccupied_square(1152921504606846976ULL, bitboards_ptr) && unoccupied_square(2305843009213693952ULL, bitboards_ptr) && unoccupied_square(4611686018427387904ULL, bitboards_ptr)) {
-                moves = moves | 2305843009213693952ULL;
-            }
-        }
-    }
-
-    return moves;
-}
-
-U64 queen_pattern(U64 start_pos, bool is_white, U64* bitboards_ptr)
-{
-    U64 moves = 0ULL;
-    U64 not_my_bb = ~my_bitboard(is_white, bitboards_ptr);
-    U64 opp_bb = opp_bitboard(is_white, bitboards_ptr);
-    U64 possible_move;
-
-    possible_move = start_pos;
-    while (possible_move) {
-        possible_move = (possible_move << 8) & not_my_bb & ~RANK_1;
-        moves = moves | possible_move;
-        if (possible_move & opp_bb) {
-            break;
-        }
-    }
-    possible_move = start_pos;
-    while (possible_move) {
-        possible_move = (possible_move << 7) & not_my_bb & ~FILE_A & ~RANK_1;
-        moves = moves | possible_move;
-        if (possible_move & opp_bb) {
-            break;
-        }
-    }
-    possible_move = start_pos;
-    while (possible_move) {
-        possible_move = (possible_move >> 1) & not_my_bb & ~FILE_A;
-        moves = moves | possible_move;
-        if (possible_move & opp_bb) {
-            break;
-        }
-    }
-    possible_move = start_pos;
-    while (possible_move) {
-        possible_move = (possible_move >> 9) & not_my_bb & ~FILE_A & ~RANK_8;
-        moves = moves | possible_move;
-        if (possible_move & opp_bb) {
-            break;
-        }
-    }
-    possible_move = start_pos;
-    while (possible_move) {
-        possible_move = (possible_move >> 8) & not_my_bb & ~RANK_8;
-        moves = moves | possible_move;
-        if (possible_move & opp_bb) {
-            break;
-        }
-    }
-    possible_move = start_pos;
-    while (possible_move) {
-        possible_move = (possible_move >> 7) & not_my_bb & ~FILE_H & ~RANK_8;
-        moves = moves | possible_move;
-        if (possible_move & opp_bb) {
-            break;
-        }
-    }
-    possible_move = start_pos;
-    while (possible_move) {
-        possible_move = (possible_move << 1) & not_my_bb & ~FILE_H;
-        moves = moves | possible_move;
-        if (possible_move & opp_bb) {
-            break;
-        }
-    }
-    possible_move = start_pos;
-    while (possible_move) {
-        possible_move = (possible_move << 9) & not_my_bb & ~FILE_H & ~RANK_1;
-        moves = moves | possible_move;
-        if (possible_move & opp_bb) {
-            break;
-        }
-    }
-
-    return moves;
-}
-
-U64 rook_pattern(U64 start_pos, bool is_white, U64* bitboards_ptr)
-{
-    U64 moves = 0ULL;
-    U64 not_my_bb = ~my_bitboard(is_white, bitboards_ptr);
-    U64 opp_bb = opp_bitboard(is_white, bitboards_ptr);
-    U64 possible_move;
-
-    possible_move = start_pos;
-    while (possible_move) {
-        possible_move = (possible_move << 8) & not_my_bb & ~RANK_1;
-        moves = moves | possible_move;
-        if (possible_move & opp_bb) {
-            break;
-        }
-    }
-    possible_move = start_pos;
-    while (possible_move) {
-        possible_move = (possible_move >> 1) & not_my_bb & ~FILE_A;
-        moves = moves | possible_move;
-        if (possible_move & opp_bb) {
-            break;
-        }
-    }
-    possible_move = start_pos;
-    while (possible_move) {
-        possible_move = (possible_move >> 8) & not_my_bb & ~RANK_8;
-        moves = moves | possible_move;
-        if (possible_move & opp_bb) {
-            break;
-        }
-    }
-    possible_move = start_pos;
-    while (possible_move) {
-        possible_move = (possible_move << 1) & not_my_bb & ~FILE_H;
-        moves = moves | possible_move;
-        if (possible_move & opp_bb) {
-            break;
-        }
-    }
-
-    return moves;
-}
-
-U64 bishop_pattern(U64 start_pos, bool is_white, U64* bitboards_ptr)
-{
-    U64 moves = 0ULL;
-    U64 not_my_bb = ~my_bitboard(is_white, bitboards_ptr);
-    U64 opp_bb = opp_bitboard(is_white, bitboards_ptr);
-    U64 possible_move;
-    
-    possible_move = start_pos;
-    while (possible_move) {
-        possible_move = (possible_move << 7) & not_my_bb & ~FILE_A & ~RANK_1;
-        moves = moves | possible_move;
-        if (possible_move & opp_bb) {
-            break;
-        }
-    }
-    possible_move = start_pos;
-    while (possible_move) {
-        possible_move = (possible_move >> 9) & not_my_bb & ~FILE_A & ~RANK_8;
-        moves = moves | possible_move;
-        if (possible_move & opp_bb) {
-            break;
-        }
-    }
-    possible_move = start_pos;
-    while (possible_move) {
-        possible_move = (possible_move >> 7) & not_my_bb & ~FILE_H & ~RANK_8;
-        moves = moves | possible_move;
-        if (possible_move & opp_bb) {
-            break;
-        }
-    }
-    possible_move = start_pos;
-    while (possible_move) {
-        possible_move = (possible_move << 9) & not_my_bb & ~FILE_H & ~RANK_1;
-        moves = moves | possible_move;
-        if (possible_move & opp_bb) {
-            break;
-        }
-    }
-
-    return moves;
-}
-
-U64 knight_pattern(U64 start_pos, bool is_white, U64* bitboards_ptr)
-{
-    U64 moves = 0ULL;
-    U64 not_my_bb = ~my_bitboard(is_white, bitboards_ptr);
-
-    moves = moves | ((start_pos << 15) & not_my_bb & ~FILE_A);
-    moves = moves | ((start_pos <<  6) & not_my_bb & ~FILE_A & ~FILE_B);
-    moves = moves | ((start_pos >> 10) & not_my_bb & ~FILE_A & ~FILE_B);
-    moves = moves | ((start_pos >> 17) & not_my_bb & ~FILE_A);
-    moves = moves | ((start_pos >> 15) & not_my_bb & ~FILE_H);
-    moves = moves | ((start_pos >>  6) & not_my_bb & ~FILE_H & ~FILE_G);
-    moves = moves | ((start_pos << 10) & not_my_bb & ~FILE_H & ~FILE_G);
-    moves = moves | ((start_pos << 17) & not_my_bb & ~FILE_H);
-
-    return moves;
-}
-
-U64 pawn_pattern(U64 start_pos, bool is_white, U64* bitboards_ptr)
-{
-    U64 moves = 0ULL;
-    U64 opp_bb = opp_bitboard(is_white, bitboards_ptr);
-    U64 ep_target = an_to_bitboard(fen.en_passant_target);
-    U64 forward_and_to_left;
-    U64 forward_and_to_right;
-
-    if (is_white) {
-        if (unoccupied_square(start_pos << 8, bitboards_ptr)) {
-            moves = moves | (start_pos << 8);
-            if (rank(start_pos) == 2 && unoccupied_square(start_pos << 16, bitboards_ptr)) {
-                moves = moves | (start_pos << 16);
-            }
-        }
-        forward_and_to_left = start_pos << 9;
-        forward_and_to_right = start_pos << 7;
-        if ((opp_bb | ep_target) & (forward_and_to_left & ~FILE_H)) {
-            moves = moves | forward_and_to_left;
-        }
-        if ((opp_bb | ep_target) & (forward_and_to_right & ~FILE_A)) {
-            moves = moves | forward_and_to_right;
-        }
-    }
-    else {
-        if (unoccupied_square(start_pos >> 8, bitboards_ptr)) {
-            moves = moves | (start_pos >> 8);
-            if (rank(start_pos) == 7 && unoccupied_square(start_pos >> 16, bitboards_ptr)) {
-                moves = moves | (start_pos >> 16);
-            }
-        }
-        forward_and_to_left = start_pos >> 9;
-        forward_and_to_right = start_pos >> 7;
-        if ((opp_bb | ep_target) & (forward_and_to_left & ~FILE_A)) {
-            moves = moves | forward_and_to_left;
-        }
-        if ((opp_bb | ep_target) & (forward_and_to_right & ~FILE_H)) {
-            moves = moves | forward_and_to_right;
-        }
-    }
-
-    return moves;
 }
 
 /* Receive the start position in algebraic notation, a pointer to the bitboards representing our 
