@@ -585,6 +585,25 @@ bool am_i_checked(U64 *bitboards_ptr, bool is_white) {
     return false;
 }
 
+// Return true if I'm checkmated
+bool detect_checkmate(bool is_white) {
+    U64 my_bb = my_bitboard(is_white, bitboards);
+    U64 single_pos = 1ULL;
+    char *moves_ptr;
+    char *local_an;
+    for (int i=0; i<64; i++) {
+        if (my_bb & single_pos) {
+            strcpy(local_an, bitboard_to_an(single_pos));
+            moves_ptr = find_moves(local_an, bitboards, true);
+            if (moves_ptr[0]) {
+                return false;
+            }
+        }
+        single_pos = single_pos << 1;
+    }
+    return true;
+}
+
 /* Convert multiple moves from bitboard representation to algebraic notation, prevent self checks at 
 depth zero, and store in moves_ptr */
 void update_moves(U64 bitboard, char *start_pos, bool is_white, bool check_for_checks) {
@@ -718,6 +737,8 @@ char *find_moves(char start_pos[], U64* bitboards_ptr, bool check_for_checks)
     } else {
         moves_ptr = secondary_moves_arr;
     }
+    // Empty contents of moves_ptr
+    memset(moves_ptr, '\0', 43);
 
     U64 start_pos_bb = an_to_bitboard(start_pos);
     for (int i = 0; i < 12; i++) {
@@ -762,12 +783,10 @@ char *find_moves(char start_pos[], U64* bitboards_ptr, bool check_for_checks)
                     break;
                 // Default
                 default:
-                    // Allocate memory to moves_ptr in edge case where update_moves isn't called
-                    moves_ptr = calloc(42, sizeof(char));
+                    memset(moves_ptr, '\0', 43);
             }
         }
     }
-
     return moves_ptr;
 }
 
