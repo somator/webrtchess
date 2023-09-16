@@ -43,6 +43,32 @@ const PlayerColor = {
     Black: 'black',
 }
 
+const PieceType = {
+    Pawn: 'pawn',
+    Knight: 'knight',
+    Bishop: 'bishop',
+    Rook: 'rook',
+    Queen: 'queen',
+    King: 'king',
+}
+
+// Pieces in Forsyth-Edwards Notation are represented by chars
+// This Json will be used to look up color and piece type
+const FenJson = {
+    'P': {'color': PlayerColor.White, 'piece': PieceType.Pawn},
+    'N': {'color': PlayerColor.White, 'piece': PieceType.Knight},
+    'B': {'color': PlayerColor.White, 'piece': PieceType.Bishop},
+    'R': {'color': PlayerColor.White, 'piece': PieceType.Rook},
+    'Q': {'color': PlayerColor.White, 'piece': PieceType.Queen},
+    'K': {'color': PlayerColor.White, 'piece': PieceType.King},
+    'p': {'color': PlayerColor.Black, 'piece': PieceType.Pawn},
+    'n': {'color': PlayerColor.Black, 'piece': PieceType.Knight},
+    'b': {'color': PlayerColor.Black, 'piece': PieceType.Bishop},
+    'r': {'color': PlayerColor.Black, 'piece': PieceType.Rook},
+    'q': {'color': PlayerColor.Black, 'piece': PieceType.Queen},
+    'k': {'color': PlayerColor.Black, 'piece': PieceType.King},
+}
+
 function reverseString(str) {
     return str.split('').reverse().join('');
 }
@@ -135,47 +161,8 @@ class Game {
                     square.removeChild(previous_piece);
                 }
                 squareIndex += 1;
-                switch(char) {
-                    case 'P':
-                        this.addPieceToSquare(square, 'white', 'pawn');
-                        break;
-                    case 'N':
-                        this.addPieceToSquare(square, 'white', 'knight');
-                        break;
-                    case 'B':
-                        this.addPieceToSquare(square, 'white', 'bishop');
-                        break;
-                    case 'R':
-                        this.addPieceToSquare(square, 'white', 'rook');
-                        break;
-                    case 'Q':
-                        this.addPieceToSquare(square, 'white', 'queen');
-                        break;
-                    case 'K':
-                        this.addPieceToSquare(square, 'white', 'king');
-                        break;
-                    case 'p':
-                        this.addPieceToSquare(square, 'black', 'pawn');
-                        break;
-                    case 'n':
-                        this.addPieceToSquare(square, 'black', 'knight');
-                        break;
-                    case 'b':
-                        this.addPieceToSquare(square, 'black', 'bishop');
-                        break;
-                    case 'r':
-                        this.addPieceToSquare(square, 'black', 'rook');
-                        break;
-                    case 'q':
-                        this.addPieceToSquare(square, 'black', 'queen');
-                        break;
-                    case 'k':
-                        this.addPieceToSquare(square, 'black', 'king');
-                        break;
-                    default:
-                        alert("An error occurred while parsing FEN.");
-                        break;
-                }
+                // look up color and piece type of piece by indexing FenJson and add it to square
+                this.addPieceToSquare(square, FenJson[char].color, FenJson[char].piece);
             }
         }
     }
