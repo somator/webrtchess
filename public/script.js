@@ -61,9 +61,11 @@ function isLightSquare(file, rank) {
 }
 
 // cwrapped functions
-const find_moves = Module.cwrap('find_moves', 'number', ['string', 'number', 'number']);
 const set_start_bitboards = Module.cwrap('set_start_bitboards', null);
+const find_moves = Module.cwrap('find_moves', 'number', ['string', 'number', 'number']);
 const make_move = Module.cwrap('make_move', 'string', ['string', 'string']);
+const detect_pawn_promotion = Module.cwrap('detect_pawn_promotion', 'string', []);
+const detect_checkmate = Module.cwrap('detect_checkmate', 'number', ['number']);
 
 class Game {
     constructor(boardElement, perspective, fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
