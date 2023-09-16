@@ -1,4 +1,5 @@
 const boardElement = document.getElementById('chessboard');
+const pawnPromotionModal = document.getElementById('pawnPromotionModal');
 
 // Open socket connection to host that serves the page
 var socket = io();
@@ -101,6 +102,7 @@ class Game {
         this.selectedSquare;
         this.potentialMoves = [];
         this.annotateSquares();
+        this.addPiecesToPawnPromotionModal();
         set_start_bitboards();
         this.fillBoardFromFen();
         this.listenForMoves();
@@ -130,6 +132,14 @@ class Game {
         pieceImg.className = 'piece ' + pieceColor + ' ' + pieceType;
         pieceImg.src = 'piecepics/' + pieceColor + '_' + pieceType + '.png';
         square.appendChild(pieceImg);
+    }
+
+    // Append piece images as children of pawn promotion modal
+    addPiecesToPawnPromotionModal() {
+        this.addPieceToSquare(document.getElementById('promoteToQueen'), this.perspective, PieceType.Queen);
+        this.addPieceToSquare(document.getElementById('promoteToRook'), this.perspective, PieceType.Rook);
+        this.addPieceToSquare(document.getElementById('promoteToBishop'), this.perspective, PieceType.Bishop);
+        this.addPieceToSquare(document.getElementById('promoteToKnight'), this.perspective, PieceType.Knight);
     }
 
     // Fill the board squares with pieces according to the fen string and the player perspective
@@ -233,6 +243,9 @@ class Game {
     movePiece(startSquare, endSquare) {
         this.fen = make_move(startSquare.id, endSquare.id);
         this.fillBoardFromFen();
+        if (detect_pawn_promotion()) {
+            pawnPromotionModal.style.display = "block";
+        }
         this.listenForMoves();
     }
 }

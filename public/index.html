@@ -12,6 +12,22 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="./a.out.js"></script>
     <script type="module" src="script.js" defer></script>
+    <!-- Pawn Promotion Modal -->
+    <div id="pawnPromotionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Promote Pawn</h2>
+            </div>
+            <div class="modal-body">
+                <div id="promoteToQueen" class="promotion"></div>
+                <div id="promoteToRook" class="promotion"></div>
+                <div id="promoteToBishop" class="promotion"></div>
+                <div id="promoteToKnight" class="promotion"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
     <div id="chessboard">
         <!-- top row -->
         <div class="square light"></div>
