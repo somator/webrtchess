@@ -79,6 +79,7 @@ char secondary_moves_arr[43];
 // Function prototypes to avoid implicit declarations
 char *find_moves(char start_pos[], U64* bitboards_ptr, bool check_for_checks);
 void process_move(char start_pos[], char end_pos[], U64 bitboards_arr[], Fen* fen_ptr);
+void update_piece_placement();
 
 // Print a single bitboard
 void print_bitboard(U64 bitboard) {
@@ -611,6 +612,20 @@ char *detect_pawn_promotion() {
         return bitboard_to_an(pawn_promotion_bb);
     }
     return NULL;
+}
+
+// Promote a pawn and return the fen string
+char *promote_pawn(char *pawn_pos, int piece_number) {
+    // Convert pawn_pos to bitboard
+    U64 pawn_pos_bb = an_to_bitboard(pawn_pos);
+    // Remove pawn_pos_bb from both pawn bitboards
+    bitboards[WHITE_PAWN] = bitboards[WHITE_PAWN] & ~pawn_pos_bb;
+    bitboards[BLACK_PAWN] = bitboards[BLACK_PAWN] & ~pawn_pos_bb;
+    // Add the promoted piece to its bitboard
+    bitboards[piece_number] = bitboards[piece_number] | pawn_pos_bb;
+    // Update the fen string and return it
+    update_piece_placement();
+    return stringify_fen();
 }
 
 /* Convert multiple moves from bitboard representation to algebraic notation, prevent self checks at 

@@ -19,7 +19,7 @@ Download, install, and activate [Emscripten](https://emscripten.org/docs/getting
 ## Compilation
 Compile chess.c with emcc, exporting the necessary functions
 ```
-emcc -s EXPORTED_FUNCTIONS=_set_start_bitboards,_find_moves,_make_move,_detect_pawn_promotion,_detect_checkmate -s EXPORTED_RUNTIME_METHODS='["cwrap", "UTF8ToString", "getValue", "setValue"]' chess.c
+emcc -s EXPORTED_FUNCTIONS=_set_start_bitboards,_find_moves,_make_move,_detect_pawn_promotion,_promote_pawn,_detect_checkmate -s EXPORTED_RUNTIME_METHODS='["cwrap", "UTF8ToString", "getValue", "setValue"]' chess.c
 ```
 
 # Usage

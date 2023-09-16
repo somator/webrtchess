@@ -92,6 +92,7 @@ const set_start_bitboards = Module.cwrap('set_start_bitboards', null);
 const find_moves = Module.cwrap('find_moves', 'number', ['string', 'number', 'number']);
 const make_move = Module.cwrap('make_move', 'string', ['string', 'string']);
 const detect_pawn_promotion = Module.cwrap('detect_pawn_promotion', 'string', []);
+const promote_pawn = Module.cwrap('promote_pawn', 'string', ['string', 'number']);
 const detect_checkmate = Module.cwrap('detect_checkmate', 'number', ['number']);
 
 class Game {
@@ -177,8 +178,22 @@ class Game {
         }
     }
 
+    // Call cwrapped pawn_promotion function once promotion is selected
+    listenForPawnPromotion(pawnPosition) {
+        const promotions = pawnPromotionModal.querySelectorAll('.promotion');
+        promotions.forEach(promotion => {
+            promotion.addEventListener('click', () => {
+                let promotionNumber = parseInt(promotion.getAttribute('data-num'));
+                promotionNumber = this.perspective == PlayerColor.White ? promotionNumber : promotionNumber + 6;
+                this.fen = promote_pawn(pawnPosition, promotionNumber);
+                this.fillBoardFromFen();
+                pawnPromotionModal.style.display = "none";
+                this.listenForMoves();
+            })
+        })
+    }
+
     listenForMoves() {
-        const game = this;
         const pieces = this.boardElement.querySelectorAll('.piece');
         pieces.forEach(piece => {
             piece.addEventListener('click', () => {
@@ -245,7 +260,9 @@ class Game {
         this.fillBoardFromFen();
         if (detect_pawn_promotion()) {
             pawnPromotionModal.style.display = "block";
+            this.listenForPawnPromotion(endSquare.id);
+        } else {
+            this.listenForMoves();
         }
-        this.listenForMoves();
     }
 }
