@@ -604,6 +604,14 @@ bool detect_checkmate(bool is_white) {
     return true;
 }
 
+// Return true if a pawn needs promotion
+bool detect_pawn_promotion() {
+    if ((bitboards[WHITE_PAWN] & RANK_8) | (bitboards[BLACK_PAWN] & RANK_1)) {
+        return true;
+    }
+    return false;
+}
+
 /* Convert multiple moves from bitboard representation to algebraic notation, prevent self checks at 
 depth zero, and store in moves_ptr */
 void update_moves(U64 bitboard, char *start_pos, bool is_white, bool check_for_checks) {
