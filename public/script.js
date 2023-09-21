@@ -1,5 +1,6 @@
 const boardElement = document.getElementById('chessboard');
 const pawnPromotionModal = document.getElementById('pawnPromotionModal');
+const checkmateModal = document.getElementById('checkmateModal');
 
 // Open socket connection to host that serves the page
 var socket = io();
@@ -261,6 +262,9 @@ class Game {
         if (detect_pawn_promotion()) {
             pawnPromotionModal.style.display = "block";
             this.listenForPawnPromotion(endSquare.id);
+        }
+        if (detect_checkmate(true)) {
+            checkmateModal.style.display="block";
         } else {
             this.listenForMoves();
         }

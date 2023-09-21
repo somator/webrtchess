@@ -2,6 +2,13 @@
     display: grid;
     grid-template-columns: repeat(8, 12vmin);
     grid-template-rows: repeat(8, 12vmin);
+    position: absolute;
+    width: 96vmin;
+    height: 96vmin;
+    left: 50%;
+    top: 50%;
+    margin-left: -48vmin;
+    margin-top: -48vmin;
 }
 
 #chessboard > .square {
@@ -110,4 +117,10 @@
 
 .promotion {
     display: inline-block;
+}
+
+.checkmate {
+    font-size: 100px;
+    text-align: center;
+    color: #fefefe;
 }
