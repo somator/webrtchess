@@ -217,6 +217,7 @@ class Game {
         square.className = 'square highlighted';
         const movesPtr = find_moves(square.id, 0, 1);
         const moves = this.readMoves(movesPtr);
+        const pieceColor = square.querySelector('.piece').classList[1];
         for (let an of moves) {
             const moveSquare = document.getElementById(an);
             const potentialMoveSignifier = document.createElement('div');
@@ -227,7 +228,7 @@ class Game {
             }
             moveSquare.appendChild(potentialMoveSignifier);
             moveSquare.addEventListener('click', moveSquare.ml = function moveListener() {
-                game.movePiece(square, moveSquare);
+                game.movePiece(square, moveSquare, pieceColor);
                 game.deselectSquare(square);
             });
             this.potentialMoves.push(moveSquare);
@@ -256,14 +257,14 @@ class Game {
         return moves;
     }
 
-    movePiece(startSquare, endSquare) {
+    movePiece(startSquare, endSquare, pieceColor) {
         this.fen = make_move(startSquare.id, endSquare.id);
         this.fillBoardFromFen();
         if (detect_pawn_promotion()) {
             pawnPromotionModal.style.display = "block";
             this.listenForPawnPromotion(endSquare.id);
         }
-        if (detect_checkmate(true)) {
+        if (detect_checkmate(pieceColor != PlayerColor.White)) {
             checkmateModal.style.display="block";
         } else {
             this.listenForMoves();
