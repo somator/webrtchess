@@ -8,31 +8,8 @@ socket.on('connect', () => {
     console.log(socket.id)
     // The Peer object is where we create and receive peer-to-peer connections
     var peer = new Peer();
-    
-    // Every Peer object is assigned a random, unique ID when it's created.
-    // When we want to connect to another peer, we'll need to know their peer id.
-    peer.on('open', function(id) {
-        console.log('My peer ID is: ' + id);
-        console.log('My socket ID is: ' + socket.id);
-
-        // Send connection offer to the socket with peerId
-        socket.emit('offer connection', {
-            peerId: id,
-            available: true,
-        });
-
-        // When the client receives a peer found message from the host
-        socket.on('peer found', (data) => {
-            console.log("Im connecting to other user: " + data.opponentPeerId);
-            // Open the peer-to-peer connection using the opponent's peer ID
-            var conn = peer.connect(data.opponentPeerId);
-            conn.on('open', function() {
-                console.log('connection open');
-                const myPlayerColor = data.myPlayerColor ? PlayerColor.Black : PlayerColor.White;
-                const game = new Game(boardElement, myPlayerColor);
-            });
-        });
-    });
+    // Initiate game
+    const game = new Game(peer, boardElement);
 });
 
 ////////////////////////////////////////////////////////////////
@@ -97,17 +74,47 @@ const promote_pawn = Module.cwrap('promote_pawn', 'string', ['string', 'number']
 const detect_checkmate = Module.cwrap('detect_checkmate', 'number', ['number']);
 
 class Game {
-    constructor(boardElement, perspective, fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
+    constructor(peer, boardElement, fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
         this.boardElement = boardElement;
-        this.perspective = perspective;
         this.fen = fen;
+        this.perspective;
         this.selectedSquare;
         this.potentialMoves = [];
-        this.annotateSquares();
-        this.addPiecesToPawnPromotionModal();
-        set_start_bitboards();
-        this.fillBoardFromFen();
-        this.listenForMoves();
+        // Every Peer object is assigned a random, unique ID when it's created.
+        // When we want to connect to another peer, we'll need to know their peer id.
+        peer.on('open', (id) => {
+            // Send connection offer to the socket with peerId
+            socket.emit('offer connection', {
+                peerId: id,
+                available: true,
+            });
+            // When the client receives a peer found message from the host
+            socket.on('peer found', (data) => {
+                // Determine White or Black from host message
+                this.perspective = data.myPlayerColor ? PlayerColor.Black : PlayerColor.White;
+                // Listen for incoming messages from peer
+                peer.on('connection', function(incomingConnection) {
+                    incomingConnection.on('data', (data) => {
+                        // Print Message
+                        console.log(data);
+                        // Handle incoming data
+                        // TO DO
+                    });
+                });
+                // Initiate outgoing connection to peer
+                var outgoingConnection = peer.connect(data.opponentPeerId);
+                outgoingConnection.on('open', () => {
+                    // Example Message
+                    outgoingConnection.send('hi!');
+                });
+                // Set interface and bitboards
+                this.annotateSquares();
+                this.addPiecesToPawnPromotionModal();
+                set_start_bitboards();
+                this.fillBoardFromFen();
+                this.listenForMoves();
+            });
+        });
     }
 
     // Assign rank and file to square elements according to perspective
