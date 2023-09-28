@@ -5,7 +5,6 @@ const checkmateModal = document.getElementById('checkmateModal');
 // Open socket connection to host that serves the page
 var socket = io();
 socket.on('connect', () => {
-    console.log(socket.id)
     // The Peer object is where we create and receive peer-to-peer connections
     var peer = new Peer();
     // Initiate game
@@ -14,14 +13,13 @@ socket.on('connect', () => {
 
 ////////////////////////////////////////////////////////////////
 
-const files = 'abcdefgh';
-const ranks = '12345678';
-
+// Color enum
 const PlayerColor = {
     White: 'white',
     Black: 'black',
 }
 
+// Piece type enum
 const PieceType = {
     Pawn: 'pawn',
     Knight: 'knight',
@@ -48,6 +46,9 @@ const FenJson = {
     'k': {'color': PlayerColor.Black, 'piece': PieceType.King},
 }
 
+// Helper functions
+
+// Return a reversed string
 function reverseString(str) {
     return str.split('').reverse().join('');
 }
@@ -57,6 +58,7 @@ function letterToNumber(c) {
     return c.charCodeAt(0) - 96;
 }
 
+// Return true if a square is light
 function isLightSquare(file, rank) {
     if ((parseInt(rank) + letterToNumber(file)) % 2 == 1) {
         return true;
@@ -65,7 +67,7 @@ function isLightSquare(file, rank) {
     }
 }
 
-// cwrapped functions
+// cwrapped functions, implementation in chess.c
 const set_start_bitboards = Module.cwrap('set_start_bitboards', null);
 const find_moves = Module.cwrap('find_moves', 'number', ['string', 'number', 'number']);
 const make_move = Module.cwrap('make_move', 'string', ['string', 'string']);
@@ -73,6 +75,8 @@ const detect_pawn_promotion = Module.cwrap('detect_pawn_promotion', 'string', []
 const promote_pawn = Module.cwrap('promote_pawn', 'string', ['string', 'number']);
 const detect_checkmate = Module.cwrap('detect_checkmate', 'number', ['number']);
 
+// The Game class is responsible handling the game interface and transmitting messages between players
+// Game logic is handled by calls to cwrapped functions
 class Game {
     constructor(peer, boardElement, fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
         this.boardElement = boardElement;
@@ -112,11 +116,10 @@ class Game {
         });
     }
 
-    // Assign rank and file to square elements according to perspective
-    // To be used when the squares have already been added to the board
+    // Assign rank and file as id attribute to square elements according to perspective
     annotateSquares(){
-        let filesLeftToRight = files;
-        let ranksTopToBottom = ranks;
+        let filesLeftToRight = 'abcdefgh';
+        let ranksTopToBottom = '12345678';
         if (this.perspective == PlayerColor.White) {
             ranksTopToBottom = reverseString(ranksTopToBottom);
         } else {
@@ -130,7 +133,7 @@ class Game {
         }
     }
 
-    // Append piece image as a child of a square element
+    // Append piece image as a child of a (square) element
     addPieceToSquare(square, pieceColor, pieceType) {
         let pieceImg = document.createElement('img');
         pieceImg.className = 'piece ' + pieceColor + ' ' + pieceType;
@@ -148,14 +151,17 @@ class Game {
 
     // Fill the board squares with pieces according to the fen string and the player perspective
     fillBoardFromFen() {
-        // Interface
+        // Piece placement is the first section of the fen string
         let piecePlacement = this.fen.split(' ')[0];
+        // Reverse piece placement if black
         if (this.perspective == PlayerColor.Black) {
             piecePlacement = reverseString(piecePlacement);
         }
         let squares = this.boardElement.children;
         let squareIndex = 0;
+        // Iterate through piece placement string
         for (const char of piecePlacement) {
+            // Numbers in piece placement string indicate blank spaces
             if (!isNaN(char)) {
                 for (let i = 0; i < parseInt(char); i++) {
                     let square = squares[squareIndex];
@@ -166,7 +172,7 @@ class Game {
                     }
                     squareIndex += 1;
                 }
-                // squareIndex += parseInt(char);
+            // Letter characters in piece placement string correspond to specific pieces
             } else if (char.match(/[a-z]/i)) {
                 let square = squares[squareIndex];
                 // remove piece if there is one
@@ -185,12 +191,16 @@ class Game {
     listenForPawnPromotion(startSquare, endSquare) {
         pawnPromotionModal.style.display = "block";
         const promotions = pawnPromotionModal.querySelectorAll('.promotion');
+        // Add event listeners to each pawn promotion option
         promotions.forEach(promotion => {
             promotion.addEventListener('click', () => {
                 let promotionNumber = parseInt(promotion.getAttribute('data-num'));
                 promotionNumber = this.perspective == PlayerColor.White ? promotionNumber : promotionNumber + 6;
+                // Update the bitboards and store the resulting fen string in this.fen
                 this.fen = promote_pawn(endSquare.id, promotionNumber);
+                // Update interface using fen string
                 this.fillBoardFromFen();
+                // Make the pawn promotion modal invisible
                 pawnPromotionModal.style.display = "none";
                 // Transmit the move info to peer
                 this.outgoingConnection.send({
@@ -203,6 +213,7 @@ class Game {
         })
     }
 
+    // Add event listeners to each piece that can be selected by the user
     listenForMoves() {
         const pieces = this.boardElement.querySelectorAll('.piece');
         pieces.forEach(piece => {
@@ -217,6 +228,7 @@ class Game {
         })
     }
 
+    // Highlight a piece, its potential moves, and listen for potential move selection
     selectSquare(square) {
         var game = this;
         if (this.selectedSquare) {
@@ -224,7 +236,9 @@ class Game {
         }
         this.selectedSquare = square;
         square.className = 'square highlighted';
+        // cwrapped find_moves will store its result in a pointer
         const movesPtr = find_moves(square.id, 0, 1);
+        // read the result
         const moves = this.readMoves(movesPtr);
         const pieceColor = square.querySelector('.piece').classList[1];
         for (let an of moves) {
@@ -244,6 +258,7 @@ class Game {
         }
     }
 
+    // Remove event listeners and highlighting
     deselectSquare(square) {
         isLightSquare(square.id[0], square.id[1]) ? square.className = 'square light' : square.className = 'square dark';
         for (let potentialMove of this.potentialMoves) {
@@ -254,6 +269,8 @@ class Game {
         this.selectedSquare = null;
     }
 
+    // Read the moves generated by cwrapped find_moves() and stored in the moves pointer
+    // Return them as a JavaScript array
     readMoves(movesPtr) {
         const moves = [];
         for (let i = 0; i < 21; i++) {
@@ -266,10 +283,14 @@ class Game {
         return moves;
     }
 
+    // Handle move selected by the user
     movePiece(startSquare, endSquare, pieceColor) {
+        // Update the bitboards and store the resulting fen string in this.fen
         this.fen = make_move(startSquare.id, endSquare.id);
+        // Update the interface using the fen string
         this.fillBoardFromFen();
         if (detect_pawn_promotion()) {
+            // Prompt the user for pawn promotion selection
             this.listenForPawnPromotion(startSquare, endSquare);
         } else {
             // Transmit the move info to peer
@@ -279,7 +300,9 @@ class Game {
                 'pawnPromotion': null
             });
         }
+        // If checkmate has occurred
         if (detect_checkmate(pieceColor != PlayerColor.White)) {
+            // Make visible the checkmate modal
             checkmateModal.style.display="block";
         } else {
             this.listenForMoves();
