@@ -111,7 +111,10 @@ class Game {
                 this.addPiecesToPawnPromotionModal();
                 set_start_bitboards();
                 this.fillBoardFromFen();
-                this.listenForMoves();
+                // White goes first
+                if (this.perspective == PlayerColor.White) {
+                    this.listenForMoves();
+                }
             });
         });
     }
@@ -208,7 +211,6 @@ class Game {
                     'endPos': endSquare.id,
                     'pawnPromotion': promotionNumber
                 });
-                this.listenForMoves();
             })
         })
     }
@@ -304,8 +306,6 @@ class Game {
         if (detect_checkmate(pieceColor != PlayerColor.White)) {
             // Make visible the checkmate modal
             checkmateModal.style.display="block";
-        } else {
-            this.listenForMoves();
         }
     }
 
