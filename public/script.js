@@ -188,15 +188,22 @@ class Game {
     }
 
     // Call cwrapped pawn_promotion function once promotion is selected
-    listenForPawnPromotion(pawnPosition) {
+    listenForPawnPromotion(startSquare, endSquare) {
+        pawnPromotionModal.style.display = "block";
         const promotions = pawnPromotionModal.querySelectorAll('.promotion');
         promotions.forEach(promotion => {
             promotion.addEventListener('click', () => {
                 let promotionNumber = parseInt(promotion.getAttribute('data-num'));
                 promotionNumber = this.perspective == PlayerColor.White ? promotionNumber : promotionNumber + 6;
-                this.fen = promote_pawn(pawnPosition, promotionNumber);
+                this.fen = promote_pawn(endSquare.id, promotionNumber);
                 this.fillBoardFromFen();
                 pawnPromotionModal.style.display = "none";
+                // Transmit the move info to peer
+                this.outgoingConnection.send({
+                    'startPos': startSquare.id,
+                    'endPos': endSquare.id,
+                    'pawnPromotion': promotionNumber
+                });
                 this.listenForMoves();
             })
         })
@@ -269,8 +276,7 @@ class Game {
         this.fen = make_move(startSquare.id, endSquare.id);
         this.fillBoardFromFen();
         if (detect_pawn_promotion()) {
-            pawnPromotionModal.style.display = "block";
-            this.listenForPawnPromotion(endSquare.id);
+            this.listenForPawnPromotion(startSquare, endSquare);
         } else {
             // Transmit the move info to peer
             this.outgoingConnection.send({
