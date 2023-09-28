@@ -94,20 +94,14 @@ class Game {
                 // Determine White or Black from host message
                 this.perspective = data.myPlayerColor ? PlayerColor.Black : PlayerColor.White;
                 // Listen for incoming messages from peer
-                peer.on('connection', function(incomingConnection) {
+                peer.on('connection', (incomingConnection) => {
                     incomingConnection.on('data', (data) => {
-                        // Print Message
-                        console.log(data);
                         // Handle incoming data
-                        // TO DO
+                        this.handleIncomingMove(data);
                     });
                 });
                 // Initiate outgoing connection to peer
                 this.outgoingConnection = peer.connect(data.opponentPeerId);
-                this.outgoingConnection.on('open', () => {
-                    // Example Message
-                    this.outgoingConnection.send('hi!');
-                });
                 // Set interface and bitboards
                 this.annotateSquares();
                 this.addPiecesToPawnPromotionModal();
@@ -288,6 +282,24 @@ class Game {
         if (detect_checkmate(pieceColor != PlayerColor.White)) {
             checkmateModal.style.display="block";
         } else {
+            this.listenForMoves();
+        }
+    }
+
+    // Handle moves transmitted by peer
+    handleIncomingMove(data) {
+        // Update the fen representation and bitboards by calling cwrapped functions
+        this.fen = make_move(data['startPos'], data['endPos']);
+        if (data['pawnPromotion']) {
+            this.fen = promote_pawn(data['endPos'], data['promotionNumber']);
+        }
+        // Update the interface using the fen representation
+        this.fillBoardFromFen();
+        // Determine if I've been checkmated
+        if (detect_checkmate(this.perspective == PlayerColor.White)) {
+            checkmateModal.style.display="block";
+        } else {
+            // Otherwise user is free to make a move
             this.listenForMoves();
         }
     }
