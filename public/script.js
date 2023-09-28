@@ -80,6 +80,7 @@ class Game {
         this.perspective;
         this.selectedSquare;
         this.potentialMoves = [];
+        this.outgoingConnection;
         // Every Peer object is assigned a random, unique ID when it's created.
         // When we want to connect to another peer, we'll need to know their peer id.
         peer.on('open', (id) => {
@@ -102,10 +103,10 @@ class Game {
                     });
                 });
                 // Initiate outgoing connection to peer
-                var outgoingConnection = peer.connect(data.opponentPeerId);
-                outgoingConnection.on('open', () => {
+                this.outgoingConnection = peer.connect(data.opponentPeerId);
+                this.outgoingConnection.on('open', () => {
                     // Example Message
-                    outgoingConnection.send('hi!');
+                    this.outgoingConnection.send('hi!');
                 });
                 // Set interface and bitboards
                 this.annotateSquares();
@@ -270,6 +271,13 @@ class Game {
         if (detect_pawn_promotion()) {
             pawnPromotionModal.style.display = "block";
             this.listenForPawnPromotion(endSquare.id);
+        } else {
+            // Transmit the move info to peer
+            this.outgoingConnection.send({
+                'startPos': startSquare.id,
+                'endPos': endSquare.id,
+                'pawnPromotion': null
+            });
         }
         if (detect_checkmate(pieceColor != PlayerColor.White)) {
             checkmateModal.style.display="block";
