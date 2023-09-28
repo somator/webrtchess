@@ -1,3 +1,4 @@
+![WebRTChess](preview.png)
 # WebRTChess
 
 WebRTChess is a peer-to-peer in-browser chess application made with C compiled to WebAssembly, utilizing the WebRTC framework.
