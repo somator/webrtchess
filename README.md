@@ -6,15 +6,13 @@ WebRTChess is a peer-to-peer in-browser chess application made with C compiled t
 ## Prerequisites
 Download and install [Node.js](https://nodejs.org/en/download)  
 
-Install [Express](https://expressjs.com/)            
-```
-npm install express
-```
-Install [PeerServer for PeerJS](https://peerjs.com/)
-```
-npm install peer -g
-```
 Download, install, and activate [Emscripten](https://emscripten.org/docs/getting_started/downloads.html)
+
+Inside the webrtchess folder, run
+```
+npm install
+```
+to install Node dependencies.
 
 ## Compilation
 Compile chess.c with emcc, exporting the necessary functions
@@ -32,4 +30,4 @@ Run the PeerServer
 ```
 peerjs --port 3001
 ```
-In your browser, go to localhost:3000.
+In your browser, go to localhost:3000. Open another tab/window to localhost:3000. Once 2 clients have entered the host's client pool, a peer to peer connection will be established and the game will start.
