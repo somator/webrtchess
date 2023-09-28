@@ -217,7 +217,7 @@ class Game {
 
     // Add event listeners to each piece that can be selected by the user
     listenForMoves() {
-        const pieces = this.boardElement.querySelectorAll('.piece');
+        const pieces = this.boardElement.querySelectorAll('.' + this.perspective + '.piece');
         pieces.forEach(piece => {
             piece.addEventListener('click', () => {
                 const square = piece.parentElement;
